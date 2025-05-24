@@ -1,0 +1,202 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+//  output   = "../generated/prisma"
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String     @id @default(uuid())
+  username      String?
+  firstname     String
+  lastname      String
+  email         String     @unique
+  password  String
+  avatarUrl     String?
+  stripeCustomerId String? // Stripe customer for donations
+  role      Role      @relation(fields: [roleId], references: [id])
+  roleId    String
+  campaigns     Campaign[] @relation("CreatorCampaigns")
+  donations     Donation[]
+  comments      Comment[]
+  documents     Document[] 
+  teamMembers   CampaignTeam[]
+  payouts       Payout[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+model Role {
+  id       String     @default(uuid()) @id
+  name     String
+  users    User[]
+  isDeleted      Boolean   @default(false)
+  deleted_at     DateTime?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt()
+}
+
+model Campaign {
+  id              String       @id @default(uuid())
+  title           String
+  description     String
+  slug            String?       @unique
+  imageUrl        String?
+  targetAmount    Float
+  currentAmount   Float        @default(0)
+  deadline        DateTime?
+  isActive        Boolean      @default(true)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  creator         User         @relation("CreatorCampaigns", fields: [creatorId], references: [id])
+  creatorId       String
+
+  donations       Donation[]
+  comments        Comment[]
+  updates         CampaignUpdate[]
+  teamMembers     CampaignTeam[]
+  category        Category?    @relation(fields: [categoryId], references: [id])
+  categoryId      String?
+
+  stripeAccountId String?      // Stripe connected account for payouts
+  stripeDashboardLink String?
+
+  tags            Tag[]        
+  payouts         Payout[]
+}
+
+model CampaignTeam {
+  id            String   @id @default(uuid())
+  user          User     @relation(fields: [userId], references: [id])
+  userId        String
+
+  campaign      Campaign @relation(fields: [campaignId], references: [id])
+  campaignId    String
+
+  role          TeamRole @default(MEMBER)
+
+  createdAt     DateTime @default(now())
+
+  @@unique([userId, campaignId])
+}
+
+enum TeamRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model Donation {
+  id              String     @id @default(uuid())
+  amount          Float
+  message         String?
+  anonymous       Boolean    @default(false)
+  createdAt       DateTime   @default(now())
+
+  user            User       @relation(fields: [userId], references: [id])
+  userId          String
+
+  campaign        Campaign   @relation(fields: [campaignId], references: [id])
+  campaignId      String
+
+  stripePaymentIntentId String?
+  status          DonationStatus @default(PENDING)
+}
+
+enum DonationStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+model Payout {
+  id            String   @id @default(uuid())
+  campaign      Campaign @relation(fields: [campaignId], references: [id])
+  campaignId    String
+
+  user          User     @relation(fields: [userId], references: [id])
+  userId        String
+
+  amount        Float
+  stripeTransferId String
+  status        PayoutStatus @default(PENDING)
+  createdAt     DateTime @default(now())
+}
+
+enum PayoutStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model Comment {
+  id          String    @id @default(uuid())
+  content     String
+  createdAt   DateTime  @default(now())
+
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+
+  campaign    Campaign  @relation(fields: [campaignId], references: [id])
+  campaignId  String
+}
+
+model CampaignUpdate {
+  id          String    @id @default(uuid())
+  title       String
+  content     String
+  createdAt   DateTime  @default(now())
+
+  campaign    Campaign  @relation(fields: [campaignId], references: [id])
+  campaignId  String
+}
+
+model Category {
+  id          String      @id @default(uuid())
+  name        String
+  slug        String      @unique
+
+  campaigns   Campaign[]
+}
+
+model Tag {
+  id          String      @id @default(uuid())
+  name        String      @unique
+
+  campaigns   Campaign[]
+}
+
+model Document {
+  id       String     @default(uuid()) @id
+  type     String
+  url String
+  filename String
+  mimetype String
+  uploadedBy      User       @relation(fields: [uploadedById], references: [id])
+  uploadedById    String  
+  isDeleted      Boolean   @default(false)
+  deleted_at     DateTime?
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt()
+
+}
+
+enum DocumentType {
+  PHOTO
+  PDF
+  DOC
+  OTHER
+}
