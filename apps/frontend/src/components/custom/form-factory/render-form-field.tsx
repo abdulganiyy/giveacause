@@ -14,10 +14,10 @@ import { FormControl, FormItem, FormLabel } from "@/components/ui/form";
 import { type FieldConfig } from "@/types";
 // import { getZipData } from '@/lib/utils';
 // import EmailInput from '../email-input';
-// import PhoneInput from "../phone-input";
+import PhoneInput from "../phone-input";
 // import InputWithIcon from '../input-with-icon';
 // import ButtonRadioGroup from '../button-radio-group';
-// import DatePicker from "../date-picker";
+import DatePicker from "../date-picker";
 // import CheckboxGroup from '../checkbox-group';
 // import CheckboxSingle from '../checkbox-single';
 // import { MultiSelect } from 'react-multi-select-component';
@@ -100,17 +100,17 @@ export const FormField = ({
         />
       );
 
-    // case "tel":
-    //   return (
-    //     <PhoneInput
-    //       className="max-h-9"
-    //       placeholder={field.placeholder}
-    //       defaultCountry="NG"
-    //       disabled={isDisabled}
-    //       {...rhfField}
-    //       value={rhfField.value || ""}
-    //     />
-    //   );
+    case "tel":
+      return (
+        <PhoneInput
+          className="max-h-9"
+          placeholder={field.placeholder}
+          defaultCountry="NG"
+          disabled={isDisabled}
+          {...rhfField}
+          value={rhfField.value || ""}
+        />
+      );
 
     case "textarea":
       return (
@@ -242,16 +242,16 @@ export const FormField = ({
     //     />
     //   );
 
-    // case "date":
-    //   return (
-    //     <DatePicker
-    //       disabled={isDisabled}
-    //       date={rhfField.value}
-    //       setDate={rhfField.onChange}
-    //       minDate={field.minDate}
-    //       maxDate={field.maxDate}
-    //     />
-    //   );
+    case "date":
+      return (
+        <DatePicker
+          disabled={isDisabled}
+          date={rhfField.value}
+          setDate={rhfField.onChange}
+          minDate={field.minDate}
+          maxDate={field.maxDate}
+        />
+      );
 
     case "time":
       return (

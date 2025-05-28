@@ -10,6 +10,8 @@ import { jwtDecode } from "jwt-decode";
 import AuthWrapper from "@/components/custom/auth-wrapper";
 import { toast } from "sonner";
 import type { FieldConfig, FormValues } from "@/types";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 
 export const loginFormFields: FieldConfig[] = [
   {
@@ -35,63 +37,52 @@ export const loginErrorMessages = {
 
 export default function Home() {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
-  const { INVALID_CREDENTIALS, NO_MATCHING_ROLES, GENERIC_LOGIN_ERROR } =
-    loginErrorMessages;
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (payload: any) => {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/signin`,
+        payload
+      );
+
+      return response.data;
+    },
+    onSuccess: (data) => {
+      const { access_token } = data;
+
+      if (typeof window !== "undefined") {
+        document.cookie = `session=${access_token};`;
+      }
+
+      const decodedToken = jwtDecode(access_token) as any;
+      const role = decodedToken.role;
+
+      if (role) {
+        toast("Login Successful");
+
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 500);
+      } else {
+        setLoginError(loginErrorMessages.NO_MATCHING_ROLES);
+      }
+    },
+    onError: (error: any) => {
+      const status = error?.response?.status;
+      const message =
+        status === 401
+          ? loginErrorMessages.INVALID_CREDENTIALS
+          : loginErrorMessages.GENERIC_LOGIN_ERROR;
+
+      setLoginError(message);
+      toast.error(message);
+    },
+  });
 
   async function handleLogin(data: FormValues): Promise<void> {
     setLoginError(null);
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/signin`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        }
-      );
-
-      if (response.ok) {
-        const { access_token } = await response.json();
-        // createSession(access_token)
-        console.log(access_token);
-
-        if (typeof window !== "undefined") {
-          document.cookie = `session=${access_token};`;
-        }
-
-        const decodedToken = jwtDecode(access_token) as any;
-
-        console.log(decodedToken);
-
-        let role = decodedToken.role;
-
-        // console.log(role);
-
-        if (role) {
-          setTimeout(() => {
-            toast("Login Successful");
-
-            router.push(`/dashboard`);
-          }, 500);
-        } else {
-          setLoginError(NO_MATCHING_ROLES);
-          setIsSubmitting(false);
-        }
-      } else {
-        const errorMessage =
-          response.status === 401 ? INVALID_CREDENTIALS : GENERIC_LOGIN_ERROR;
-        setLoginError(errorMessage);
-        setIsSubmitting(false);
-      }
-    } catch (error) {
-      setLoginError(GENERIC_LOGIN_ERROR);
-      setIsSubmitting(false);
-      toast.error(GENERIC_LOGIN_ERROR);
-    }
+    mutate(data);
   }
 
   return (
@@ -107,10 +98,10 @@ export default function Home() {
             <Button
               variant="outline"
               type="submit"
-              disabled={isSubmitting}
-              className="bg-black text-white"
+              disabled={isPending}
+              className="bg-green-700 text-white"
             >
-              {isSubmitting ? "Signing in..." : "Sign in"}
+              {isPending ? "Signing in..." : "Sign in"}
             </Button>
             <Button
               onClick={() => router.push("/signup")}

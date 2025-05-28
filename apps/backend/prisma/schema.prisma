@@ -54,6 +54,8 @@ model Campaign {
   slug            String?       @unique
   imageUrl        String?
   targetAmount    Float
+  currency        String 
+  status          String? 
   currentAmount   Float        @default(0)
   deadline        DateTime?
   isActive        Boolean      @default(true)
