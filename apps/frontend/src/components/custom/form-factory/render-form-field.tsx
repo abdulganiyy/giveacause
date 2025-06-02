@@ -21,9 +21,9 @@ import DatePicker from "../date-picker";
 // import CheckboxGroup from '../checkbox-group';
 // import CheckboxSingle from '../checkbox-single';
 // import { MultiSelect } from 'react-multi-select-component';
-// import FileDropzone from "../file-dropzone";
+import FileDropzone from "../file-dropzone";
 import { debounce } from "lodash";
-// import PictureUpload from "../picture-upload";
+import PictureUpload from "../picture-upload";
 // import TimeSlotsInput from "../timeslots-input";
 
 interface RenderFormFieldProps {
@@ -264,25 +264,25 @@ export const FormField = ({
         />
       );
 
-    // case "files":
-    //   return (
-    //     <FileDropzone
-    //       name={field.name}
-    //       files={rhfField.value || []}
-    //       maxFiles={field.fileUploadOptions?.maxFiles || 1}
-    //       maxSize={field.fileUploadOptions?.maxSize || 1024 * 1024 * 5}
-    //       accept={field.fileUploadOptions?.accept}
-    //     />
-    //   );
+    case "files":
+      return (
+        <FileDropzone
+          name={field.name}
+          files={rhfField.value || []}
+          maxFiles={field.fileUploadOptions?.maxFiles || 1}
+          maxSize={field.fileUploadOptions?.maxSize || 1024 * 1024 * 5}
+          accept={field.fileUploadOptions?.accept}
+        />
+      );
 
-    // case "picture-upload":
-    //   return (
-    //     <PictureUpload
-    //       name={field.name}
-    //       file={rhfField.value || {}}
-    //       maxSize={field.fileUploadOptions?.maxSize || 1024 * 1024 * 1}
-    //     />
-    //   );
+    case "picture-upload":
+      return (
+        <PictureUpload
+          name={field.name}
+          file={rhfField.value || {}}
+          maxSize={field.fileUploadOptions?.maxSize || 1024 * 1024 * 1}
+        />
+      );
 
     // case "availability":
     //   return <TimeSlotsInput name={field.name} />;

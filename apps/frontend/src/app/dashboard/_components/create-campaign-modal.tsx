@@ -28,21 +28,21 @@ export const campaignFormFields: FieldConfig[] = [
   {
     name: "description",
     label: "Description",
-    type: "text",
+    type: "textarea",
     placeholder: "Enter campaign description",
   },
   {
-    name: "currency",
-    label: "Currency",
-    type: "select",
-    placeholder: "Enter currency",
-    options: [
-      { label: "$(Dollar)", value: "$" },
-      { label: "₦(Naira)", value: "₦" },
-    ],
+    name: "imageUrl",
+    label: "Campaign Image",
+    type: "files",
+    fileUploadOptions: {
+      maxFiles: 1,
+      maxSize: 1024 * 1024,
+      accept: { "image/*": [".jpg", ".jpeg", ".png"] },
+    },
   },
   {
-    name: "amount",
+    name: "targetAmount",
     label: "Amount",
     type: "number",
     placeholder: "Enter amount to raise",
@@ -65,24 +65,21 @@ export default function CreateCampaignModal() {
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (payload: any) => {
-      const response = await apiService.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/campaign`,
-        payload
-      );
+      const response = await apiService.post(`/campaign`, payload);
 
       return response.data;
     },
     onSuccess: (data) => {
       toast("Campaign created succssfully");
     },
-    onError: () => {
+    onError: (err: any) => {
       toast.error(GENERIC_ERROR);
     },
   });
 
   async function handleCreateCampaign(data: FormValues | any): Promise<void> {
     setError(null);
-    mutate(data);
+    mutate({ ...data, imageUrl: data.imageUrl[0].url, currency: "₦" });
 
     // console.log(data);
 

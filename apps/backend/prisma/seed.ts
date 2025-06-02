@@ -1,6 +1,8 @@
 import * as bcrypt from 'bcrypt'
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
+import { v4 as uuidv4 } from 'uuid';
+
 
 async function createUser(
   id: string,
@@ -91,6 +93,24 @@ const superSecretPasswordHash = '$2b$10$1.hQBnDaIB78x1iHfUWMYeUgkvQy8oMs2/zJbQ1z
     lastname: 'Administrator',
     password: superSecretPasswordHash,
   });
+
+   const categoryies = [{id:'fa13e323-d887-4391-b25c-5a7ade423bcc',name:'Health'}
+    ,{id:'fb13e323-d887-3391-b25c-5a7ade423bcc',name:'Education'},
+    {id:'fa13f323-d887-4391-b25c-5c7ade423bcc',name:'Memorial'},
+    {id:'fa13e323-e887-4391-b25c-5a7ade423acc',name:'Relief',},
+    {id:'fa13e323-g887-4391-b25d-5a7ade423bcc',name:'General',}]
+
+
+    await Promise.all(categoryies.map(category => prisma.category.upsert({
+    where: {id: category.id },
+    update: {},
+    create: {
+      id:category.id,
+      name:category.name,
+      slug:category.name
+    },
+  })))
+
 }
 
 main()
