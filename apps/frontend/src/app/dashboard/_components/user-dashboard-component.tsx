@@ -16,6 +16,9 @@ import { Bar, BarChart } from "recharts";
 
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 
+import { useQuery } from "@tanstack/react-query";
+import apiService from "@/lib/apiService";
+
 const chartData = [
   { month: "January", desktop: 186, mobile: 80 },
   { month: "February", desktop: 305, mobile: 200 },
@@ -36,7 +39,16 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+const fetchCampaigns = async () => {
+  const response = await apiService.get("/user/campaigns");
+  return response;
+};
 const UserDashboard = () => {
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["userCampaigns"],
+    queryFn: fetchCampaigns,
+  });
+
   return (
     <div className="space-y-4">
       <div className="md:grid-cols-4 grid grid-cols-1 gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card">
@@ -131,7 +143,7 @@ const UserDashboard = () => {
           <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
         </BarChart>
       </ChartContainer>
-      <CampaignsTable />
+      {data?.campaigns && <CampaignsTable data={data.campaigns} />}
     </div>
   );
 };

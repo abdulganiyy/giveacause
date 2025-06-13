@@ -29,28 +29,38 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const formatCurrency = (amount: string) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "NGN",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(+amount);
+};
+
 type Campaign = {
   id: string;
   title: string;
   isActive: boolean;
-  //   status: "pending" | "processing" | "success" | "failed";
+  targetAmount: string;
+  currentAmount: string;
   progress: string;
 };
 
-export const data: Campaign[] = [
-  {
-    id: "728ed52f",
-    title: "Hospital Bills",
-    isActive: true,
-    progress: "240,000",
-  },
-  {
-    id: "928ed52f",
-    title: "Debt Repayment",
-    isActive: true,
-    progress: "140,000",
-  },
-];
+// export const data: Campaign[] = [
+//   {
+//     id: "728ed52f",
+//     title: "Hospital Bills",
+//     isActive: true,
+//     progress: "240,000",
+//   },
+//   {
+//     id: "928ed52f",
+//     title: "Debt Repayment",
+//     isActive: true,
+//     progress: "140,000",
+//   },
+// ];
 
 // export type Payment = {
 //   id: string
@@ -69,8 +79,22 @@ export const columns: ColumnDef<Campaign>[] = [
     header: "Status",
   },
   {
-    accessorKey: "progress",
+    accessorKey: "currentAmount",
     header: "Amount Raised",
+    cell: ({ row }) => {
+      const campaign = row.original;
+
+      return <span>{formatCurrency(campaign.currentAmount)}</span>;
+    },
+  },
+  {
+    accessorKey: "targetAmount",
+    header: "Target Amount",
+    cell: ({ row }) => {
+      const campaign = row.original;
+
+      return <span>{formatCurrency(campaign.targetAmount)}</span>;
+    },
   },
   {
     id: "actions",
@@ -104,12 +128,12 @@ export const columns: ColumnDef<Campaign>[] = [
   },
 ];
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
+interface DataTableProps<TData> {
+  // columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export default function CampaignsTable() {
+export default function CampaignsTable({ data }: DataTableProps<any>) {
   const table = useReactTable({
     data,
     columns,

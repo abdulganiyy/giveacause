@@ -15,16 +15,11 @@ import { type FieldConfig } from "@/types";
 // import { getZipData } from '@/lib/utils';
 // import EmailInput from '../email-input';
 import PhoneInput from "../phone-input";
-// import InputWithIcon from '../input-with-icon';
-// import ButtonRadioGroup from '../button-radio-group';
 import DatePicker from "../date-picker";
-// import CheckboxGroup from '../checkbox-group';
-// import CheckboxSingle from '../checkbox-single';
-// import { MultiSelect } from 'react-multi-select-component';
 import FileDropzone from "../file-dropzone";
 import { debounce } from "lodash";
 import PictureUpload from "../picture-upload";
-// import TimeSlotsInput from "../timeslots-input";
+import { BankAccountInput } from "../bank-account-number";
 
 interface RenderFormFieldProps {
   field: FieldConfig;
@@ -157,23 +152,23 @@ export const FormField = ({
           <FormControl>
             <SelectTrigger>
               <SelectValue
-              /* Placeholder logic if `dynamicOptionsKey` is present:
-               * `options` is undefined if the dynamic options are still loading
-               * `options` is null if there was an API error fetching options
-               * `options` is an empty array if the dynamic options have loaded but there are no options
-               * Otherwise, populate options and use default placeholder
-               */
-              // placeholder={
-              //   field.dynamicOptionsKey
-              //     ? field.options === undefined
-              //       ? 'Loading...'
-              //       : field.options === null
-              //         ? 'Error fetching options'
-              //         : !field.options?.length
-              //           ? 'No options available'
-              //           : field.placeholder
-              //     : field.placeholder
-              // }
+                /* Placeholder logic if `dynamicOptionsKey` is present:
+                 * `options` is undefined if the dynamic options are still loading
+                 * `options` is null if there was an API error fetching options
+                 * `options` is an empty array if the dynamic options have loaded but there are no options
+                 * Otherwise, populate options and use default placeholder
+                 */
+                placeholder={
+                  field.dynamicOptionsKey
+                    ? field.options === undefined
+                      ? "Loading..."
+                      : field.options === null
+                        ? "Error fetching options"
+                        : !field.options?.length
+                          ? "No options available"
+                          : field.placeholder
+                    : field.placeholder
+                }
               />
             </SelectTrigger>
           </FormControl>
@@ -186,61 +181,6 @@ export const FormField = ({
           </SelectContent>
         </Select>
       );
-
-    // case 'multi-select':
-    //   return (
-    //     <MultiSelect
-    //       // @ts-ignore
-    //       options={field.options || []}
-    //       value={rhfField.value || []}
-    //       onChange={rhfField.onChange}
-    //       labelledBy={field.label || 'Select'}
-    //       disabled={isDisabled}
-    //       hasSelectAll={true}
-    //       disableSearch={false}
-    //       overrideStrings={{
-    //         selectSomeItems: field.placeholder || 'Select All Applicable',
-    //         allItemsAreSelected: 'All items are selected',
-    //         selectAll: 'Select All',
-    //         search: 'Search',
-    //       }}
-    //     />
-    //   );
-
-    // case 'checkbox':
-    //   return (
-    //     <CheckboxSingle
-    //       description={field.checkboxLabel}
-    //       value={rhfField.value || false}
-    //       onChange={rhfField.onChange}
-    //       // TODO: add disabled prop to CheckboxSingle
-    //       // disabled={isDisabled}
-    //     />
-    //   );
-
-    // case 'checkbox-group':
-    //   return (
-    //     <CheckboxGroup
-    //       options={field.options || []}
-    //       values={rhfField.value || []}
-    //       onChange={rhfField.onChange}
-    //       // TODO: add disabled prop to CheckboxGroup
-    //       // disabled={isDisabled}
-    //     />
-    //   );
-
-    // Specialized custom field types
-
-    // case 'button-radio-group':
-    //   return (
-    //     <ButtonRadioGroup
-    //       options={field.options || []}
-    //       value={rhfField.value}
-    //       onChange={rhfField.onChange}
-    //       name={field.name}
-    //       disabled={isDisabled}
-    //     />
-    //   );
 
     case "date":
       return (
@@ -284,9 +224,6 @@ export const FormField = ({
         />
       );
 
-    // case "availability":
-    //   return <TimeSlotsInput name={field.name} />;
-
     // case 'zip':
     //   return (
     //     <Input
@@ -300,6 +237,9 @@ export const FormField = ({
     //   );
 
     // TODO: more cases
+
+    case "account-number":
+      return <BankAccountInput name={field.name} rhfField={rhfField} />;
 
     default:
       return null;

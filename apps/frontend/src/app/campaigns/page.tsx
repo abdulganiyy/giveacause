@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import React from "react";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -13,6 +15,7 @@ import {
   TrendingUp,
   Award,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,132 +34,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
+import {
+  fetchCampaigns,
+  fetchCategories,
+  fetchFeaturedCampaigns,
+  fetchTrendingCampaigns,
+} from "@/lib/api";
+
 import NavBar from "@/components/custom/NavBar";
 import Footer from "@/components/custom/Footer";
-
-// Mock data for campaigns
-const campaignsData = [
-  {
-    id: 1,
-    title: "Help Sarah Rebuild After House Fire",
-    description:
-      "Sarah and her two young children lost everything when their home was destroyed in a devastating house fire. They need our help to rebuild their lives.",
-    image:
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop&crop=center",
-    category: "Emergency",
-    goalAmount: 50000,
-    raisedAmount: 32750,
-    donorCount: 247,
-    daysLeft: 23,
-    featured: true,
-    trending: true,
-  },
-  {
-    id: 2,
-    title: "Life-Saving Surgery for Max",
-    description:
-      "Max needs an urgent heart surgery that his family cannot afford. Your donation could save his life.",
-    image:
-      "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=400&fit=crop&crop=center",
-    category: "Medical",
-    goalAmount: 75000,
-    raisedAmount: 45000,
-    donorCount: 312,
-    daysLeft: 15,
-    featured: true,
-    trending: false,
-  },
-  {
-    id: 3,
-    title: "Community Garden Project",
-    description:
-      "Help us transform an abandoned lot into a beautiful community garden that will provide fresh produce for local families.",
-    image:
-      "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&h=400&fit=crop&crop=center",
-    category: "Community",
-    goalAmount: 15000,
-    raisedAmount: 9800,
-    donorCount: 124,
-    daysLeft: 45,
-    featured: false,
-    trending: true,
-  },
-  {
-    id: 4,
-    title: "Support Local Animal Shelter",
-    description:
-      "Our animal shelter is at capacity and needs funds for food, medical care, and facility improvements.",
-    image:
-      "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&h=400&fit=crop&crop=center",
-    category: "Animals",
-    goalAmount: 20000,
-    raisedAmount: 12500,
-    donorCount: 189,
-    daysLeft: 30,
-    featured: false,
-    trending: true,
-  },
-  {
-    id: 5,
-    title: "College Fund for First-Generation Students",
-    description:
-      "Help provide scholarships for talented students who are the first in their families to attend college.",
-    image:
-      "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&h=400&fit=crop&crop=center",
-    category: "Education",
-    goalAmount: 100000,
-    raisedAmount: 67500,
-    donorCount: 423,
-    daysLeft: 60,
-    featured: true,
-    trending: false,
-  },
-  {
-    id: 6,
-    title: "Rebuild Local School After Tornado",
-    description:
-      "Our town's elementary school was severely damaged by a tornado. Help us rebuild it for our children.",
-    image:
-      "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=600&h=400&fit=crop&crop=center",
-    category: "Emergency",
-    goalAmount: 200000,
-    raisedAmount: 125000,
-    donorCount: 578,
-    daysLeft: 90,
-    featured: false,
-    trending: false,
-  },
-  {
-    id: 7,
-    title: "Clean Water Initiative",
-    description:
-      "Help us bring clean drinking water to communities that currently lack access to this basic necessity.",
-    image:
-      "https://images.unsplash.com/photo-1541544181051-e46607bc22a4?w=600&h=400&fit=crop&crop=center",
-    category: "Environment",
-    goalAmount: 35000,
-    raisedAmount: 21000,
-    donorCount: 210,
-    daysLeft: 40,
-    featured: false,
-    trending: false,
-  },
-  {
-    id: 8,
-    title: "Support for Veterans Housing Project",
-    description:
-      "We're building affordable housing for homeless veterans in our community. Your donation makes a difference.",
-    image:
-      "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&h=400&fit=crop&crop=center",
-    category: "Housing",
-    goalAmount: 150000,
-    raisedAmount: 98000,
-    donorCount: 356,
-    daysLeft: 75,
-    featured: false,
-    trending: false,
-  },
-];
+import { getDaysBetweenDates } from "@/lib/utils";
 
 const categories = [
   "All Categories",
@@ -173,6 +63,83 @@ export default function CampaignsListingPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [sortBy, setSortBy] = useState("Most Recent");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Reset pagination when search or category changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchQuery, selectedCategory]);
+
+  // Fetch all campaigns with search, filter, and pagination
+  const {
+    data: campaignsData,
+    isLoading: isLoadingCampaigns,
+    error: campaignsError,
+    refetch: refetchCampaigns,
+  } = useQuery({
+    queryKey: [
+      "campaigns",
+      debouncedSearchQuery,
+      selectedCategory,
+      currentPage,
+      sortBy,
+    ],
+    queryFn: () =>
+      fetchCampaigns(
+        debouncedSearchQuery,
+        selectedCategory,
+        currentPage,
+        sortBy
+      ),
+  });
+
+  // Fetch featured campaigns
+  const {
+    data: featuredCampaignsData = [],
+    isLoading: isLoadingFeatured,
+    error: featuredError,
+  } = useQuery({
+    queryKey: ["featuredCampaigns"],
+    queryFn: fetchFeaturedCampaigns,
+  });
+
+  // Fetch trending campaigns
+  const {
+    data: trendingCampaignsData = [],
+    isLoading: isLoadingTrending,
+    error: trendingError,
+  } = useQuery({
+    queryKey: ["trendingCampaigns"],
+    queryFn: fetchTrendingCampaigns,
+  });
+
+  // Fetch categories
+  const {
+    data: categories = [],
+    isLoading: isLoadingCategory,
+    error: categoryError,
+  } = useQuery({
+    queryKey: ["categories"],
+    queryFn: fetchCategories,
+  });
+
+  // Extract campaigns and pagination from the API response
+  const campaigns = campaignsData?.data || [];
+  const pagination = campaignsData?.pagination || { page: 1, totalPages: 1 };
+
+  const trendingCampaigns = trendingCampaignsData?.data || [];
+
+  const featuredCampaigns = featuredCampaignsData?.data || [];
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -187,36 +154,7 @@ export default function CampaignsListingPage() {
     return (raised / goal) * 100;
   };
 
-  const featuredCampaigns = campaignsData.filter(
-    (campaign) => campaign.featured
-  );
-  const trendingCampaigns = campaignsData.filter(
-    (campaign) => campaign.trending
-  );
-
-  const filteredCampaigns = campaignsData.filter((campaign) => {
-    const matchesSearch =
-      campaign.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      campaign.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "All Categories" ||
-      campaign.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  // Sort campaigns based on selected sort option
-  const sortedCampaigns = [...filteredCampaigns].sort((a, b) => {
-    if (sortBy === "Most Recent") {
-      return b.id - a.id;
-    } else if (sortBy === "Most Funded") {
-      return b.raisedAmount - a.raisedAmount;
-    } else if (sortBy === "Ending Soon") {
-      return a.daysLeft - b.daysLeft;
-    }
-    return 0;
-  });
-
-  const renderCampaignCard = (campaign: (typeof campaignsData)[0]) => {
+  const renderCampaignCard = (campaign: any) => {
     return (
       <Link
         href={`/campaigns/${campaign.id}`}
@@ -226,7 +164,7 @@ export default function CampaignsListingPage() {
         <Card className="h-full overflow-hidden">
           <div className="relative h-48 w-full overflow-hidden">
             <Image
-              src={campaign.image || "/placeholder.svg"}
+              src={campaign.imageUrl || "/placeholder.svg"}
               alt={campaign.title}
               fill
               className="object-cover transition-transform hover:scale-105"
@@ -246,10 +184,10 @@ export default function CampaignsListingPage() {
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="font-medium">
-                    {formatCurrency(campaign.raisedAmount)}
+                    {formatCurrency(campaign.currentAmount)}
                   </span>
                   <span className="text-gray-500">
-                    of {formatCurrency(campaign.goalAmount)}
+                    of {formatCurrency(campaign.targetAmount)}
                   </span>
                 </div>
                 <Progress
@@ -270,12 +208,44 @@ export default function CampaignsListingPage() {
               </div>
               <div className="flex items-center">
                 <Calendar className="h-3 w-3 mr-1" />
-                <span>{campaign.daysLeft} days left</span>
+                <span>{getDaysBetweenDates(campaign.deadline)} days left</span>
               </div>
             </div>
           </CardFooter>
         </Card>
       </Link>
+    );
+  };
+
+  const renderSkeletonCard = () => {
+    return (
+      <Card className="h-full overflow-hidden">
+        <div className="relative h-48 w-full overflow-hidden">
+          <Skeleton className="h-full w-full" />
+        </div>
+        <CardHeader className="pb-2">
+          <Skeleton className="h-6 w-3/4 mb-2" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-2/3 mt-1" />
+        </CardHeader>
+        <CardContent className="pb-2">
+          <div className="space-y-3">
+            <div>
+              <div className="flex justify-between text-sm mb-1">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <Skeleton className="h-1.5 w-full" />
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter className="pt-0">
+          <div className="flex justify-between w-full">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-3 w-20" />
+          </div>
+        </CardFooter>
+      </Card>
     );
   };
 
@@ -289,20 +259,12 @@ export default function CampaignsListingPage() {
         <section className="mb-12">
           <div className="text-center space-y-4 max-w-3xl mx-auto">
             <h1 className="text-4xl font-bold text-gray-900">
-              Make a Difference Today
+              Discover Campaigns
             </h1>
             <p className="text-xl text-gray-600">
-              Discover campaigns that need your support or start your own
-              fundraiser
+              Find causes that matter to you and make a difference with your
+              support
             </p>
-            <div className="flex justify-center space-x-4 pt-4">
-              <Button className="bg-green-600 hover:bg-green-700" size="lg">
-                Donate Now
-              </Button>
-              <Button variant="outline" size="lg">
-                Start Fundraising
-              </Button>
-            </div>
           </div>
         </section>
 
@@ -315,9 +277,26 @@ export default function CampaignsListingPage() {
                 Featured Campaigns
               </h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredCampaigns.map(renderCampaignCard)}
-            </div>
+            {featuredError ? (
+              <Alert variant="destructive" className="mb-6">
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>
+                  Failed to load featured campaigns. Please try again later.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {isLoadingFeatured
+                  ? Array(3)
+                      .fill(0)
+                      .map((_, i) => (
+                        <div key={`featured-skeleton-${i}`}>
+                          {renderSkeletonCard()}
+                        </div>
+                      ))
+                  : featuredCampaigns.map(renderCampaignCard)}
+              </div>
+            )}
           </section>
         )}
 
@@ -343,12 +322,12 @@ export default function CampaignsListingPage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  {categories.map((category) => (
+                  {categories.map((category: any) => (
                     <DropdownMenuItem
-                      key={category}
-                      onClick={() => setSelectedCategory(category)}
+                      key={category.id}
+                      onClick={() => setSelectedCategory(category.name)}
                     >
-                      {category}
+                      {category.name}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
@@ -387,51 +366,151 @@ export default function CampaignsListingPage() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="all">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {sortedCampaigns.map(renderCampaignCard)}
-              </div>
-              {sortedCampaigns.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-gray-500">
-                    No campaigns found matching your criteria.
-                  </p>
+              {campaignsError ? (
+                <Alert variant="destructive" className="mb-6">
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>
+                    Failed to load campaigns. Please try again later.
+                  </AlertDescription>
+                </Alert>
+              ) : isLoadingCampaigns ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {Array(8)
+                    .fill(0)
+                    .map((_, i) => (
+                      <div key={`all-skeleton-${i}`}>
+                        {renderSkeletonCard()}
+                      </div>
+                    ))}
                 </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {campaigns.map(renderCampaignCard)}
+                  </div>
+                  {campaigns.length === 0 && (
+                    <div className="text-center py-12">
+                      <p className="text-gray-500">
+                        No campaigns found matching your criteria.
+                      </p>
+                      <Button
+                        variant="outline"
+                        className="mt-4"
+                        onClick={() => {
+                          setSearchQuery("");
+                          setSelectedCategory("All Categories");
+                          refetchCampaigns();
+                        }}
+                      >
+                        Clear filters
+                      </Button>
+                    </div>
+                  )}
+                </>
               )}
             </TabsContent>
             <TabsContent value="trending">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {trendingCampaigns.map(renderCampaignCard)}
-              </div>
-              {trendingCampaigns.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-gray-500">
-                    No trending campaigns at the moment.
-                  </p>
+              {trendingError ? (
+                <Alert variant="destructive" className="mb-6">
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>
+                    Failed to load trending campaigns. Please try again later.
+                  </AlertDescription>
+                </Alert>
+              ) : isLoadingTrending ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {Array(4)
+                    .fill(0)
+                    .map((_, i) => (
+                      <div key={`trending-skeleton-${i}`}>
+                        {renderSkeletonCard()}
+                      </div>
+                    ))}
                 </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {trendingCampaigns.map(renderCampaignCard)}
+                  </div>
+                  {trendingCampaigns.length === 0 && (
+                    <div className="text-center py-12">
+                      <p className="text-gray-500">
+                        No trending campaigns at the moment.
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
             </TabsContent>
           </Tabs>
         </section>
 
         {/* Pagination */}
-        <section className="flex justify-center mt-12">
-          <Button variant="outline" className="mx-1">
-            Previous
-          </Button>
-          <Button variant="outline" className="mx-1 bg-green-50">
-            1
-          </Button>
-          <Button variant="outline" className="mx-1">
-            2
-          </Button>
-          <Button variant="outline" className="mx-1">
-            3
-          </Button>
-          <Button variant="outline" className="mx-1">
-            Next
-          </Button>
-        </section>
+        {!isLoadingCampaigns && pagination.totalPages > 1 && (
+          <section className="flex justify-center mt-12">
+            <Button
+              variant="outline"
+              className="mx-1"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+              .filter((page) => {
+                // Show first page, last page, and pages around current page
+                return (
+                  page === 1 ||
+                  page === pagination.totalPages ||
+                  (page >= currentPage - 1 && page <= currentPage + 1)
+                );
+              })
+              .map((page, index, array) => {
+                // Add ellipsis between non-consecutive pages
+                if (index > 0 && page - array[index - 1] > 1) {
+                  return (
+                    <React.Fragment key={`ellipsis-${page}`}>
+                      <Button variant="outline" className="mx-1" disabled>
+                        ...
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className={`mx-1 ${currentPage === page ? "bg-green-50" : ""}`}
+                        onClick={() => setCurrentPage(page)}
+                      >
+                        {page}
+                      </Button>
+                    </React.Fragment>
+                  );
+                }
+                return (
+                  <Button
+                    key={page}
+                    variant="outline"
+                    className={`mx-1 ${currentPage === page ? "bg-green-50" : ""}`}
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </Button>
+                );
+              })}
+            <Button
+              variant="outline"
+              className="mx-1"
+              onClick={() =>
+                setCurrentPage((prev) =>
+                  Math.min(prev + 1, pagination.totalPages)
+                )
+              }
+              disabled={currentPage === pagination.totalPages}
+            >
+              Next
+            </Button>
+          </section>
+        )}
       </main>
+
+      {/* Footer */}
       <Footer />
     </div>
   );

@@ -23,7 +23,7 @@ export function useUser() {
 const { data, isLoading, error } = useQuery({queryKey:['profile'],queryFn:fetchProfile});
 
 
-console.log(data)
+// console.log(data)
 
   return { data, isLoading, error };
 }

@@ -25,9 +25,13 @@ model User {
   password               String
   avatarUrl              String?
   paystackSubAccountId   String? 
+  address                String?
+  phone                  String? 
+  state                  String? 
   bankName               String?
   accountName            String?
   accountNumber          String?
+  status                 UserAccountStatus @default(PENDING)
   role                   Role      @relation(fields: [roleId], references: [id])
   roleId                 String
   campaigns              Campaign[] @relation("CreatorCampaigns")
@@ -58,10 +62,12 @@ model Campaign {
   imageUrl        String?
   targetAmount    Float
   currency        String 
-  status          String? 
+  status          CampaignStatus @default(PENDING)
   currentAmount   Float        @default(0)
   deadline        DateTime?
-  isActive        Boolean      @default(true)
+  isActive        Boolean      @default(false)
+  featured        Boolean      @default(false)
+  trending        Boolean      @default(false)
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
   creator         User         @relation("CreatorCampaigns", fields: [creatorId], references: [id])
@@ -74,6 +80,12 @@ model Campaign {
   categoryId      String?
   tags            Tag[]        
   payouts         Payout[]
+}
+
+enum CampaignStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }
 
 model CampaignTeam {
@@ -97,6 +109,8 @@ model Donation {
   id              String     @id @default(uuid())
   amount          Float
   message         String?
+  name            String?
+  email           String?
   anonymous       Boolean    @default(false)
   createdAt       DateTime   @default(now())
   user            User?       @relation(fields: [userId], references: [id])
@@ -129,6 +143,12 @@ enum PayoutStatus {
   PENDING
   COMPLETED
   FAILED
+}
+
+enum UserAccountStatus {
+  PENDING
+  COMPLETED
+  REJECTED
 }
 
 model Comment {

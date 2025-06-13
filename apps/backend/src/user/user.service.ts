@@ -36,20 +36,9 @@ export class UserService {
 
   }
 
-  // async createUser(data:CreateUserDto): Promise<User | undefined> {
-
-  //   let passwordHash = await hash(data.password,10)
-
-  //   const {link,...userPayload} = data;
-
-
-  //  const user = await this.prisma.user.create({data:{...userPayload,password:passwordHash}})
-
-  //   const role = await this.prisma.role.findUniqueOrThrow({where:{id:data.roleId}})
-
-  //   return {message:"New User created successfully"};
-
-  // }
+  async getAllCampaigns(id:string) {
+    return this.prisma.user.findFirst({where:{id},include:{campaigns:true}});
+  }
 
   async updatePassword(data:User): Promise<User | undefined> {
 
