@@ -8,7 +8,7 @@ export class PaystackController {
 
   @Get('verify-account')
   async verifyAccount(
-     @Query('accountNnumber') accountNumber: string,
+     @Query('accountNumber') accountNumber: string,
     @Query('bankCode') bankCode: string,
   ) {
     return this.paystackService.verifyBankAccount(accountNumber,bankCode)

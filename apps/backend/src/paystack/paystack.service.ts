@@ -34,7 +34,7 @@ export class PaystackService {
     } catch (error) {
       const message =
         error.response?.data?.message || 'Bank account verification failed';
-      throw new HttpException(message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(message, HttpStatus.BAD_REQUEST)
     }
   }
 }
