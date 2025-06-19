@@ -26,17 +26,39 @@ export class UserController {
     return this.userService.getAllCampaigns(req.user.userId)
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(id);
+    @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK) 
+  @Get('/donations')
+ getAllDonations(@Request() req) {
+    return this.userService.getAllDonations(req.user.userId)
   }
 
 
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK) 
+  @Get('/stats')
+  findUserStats(@Request() req) {
+    return this.userService.fetchUserStats(req.user.userId)
+  }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-  //   return this.userService.update(id, updateUserDto);
-  // }
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK) 
+  @Get('/admin-stats')
+  findAdminStats() {
+    return this.userService.fetchAdminStats()
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.userService.findUserById(id)
+  }
+
+
+  @UseGuards(AuthGuard)
+  @Patch()
+  update(@Request() req, @Body() updateUserDto: UpdateUserDto) {
+    return this.userService.update(req.user.userId, updateUserDto);
+  }
 
   // @Delete(':id')
   // remove(@Param('id') id: string) {

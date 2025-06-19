@@ -11,13 +11,13 @@ import { toast } from "sonner";
 
 export const basicInfoFormFields: FieldConfig[] = [
   {
-    name: "firstName",
+    name: "firstname",
     label: "First Name",
     type: "text",
     // placeholder: "Enter First Name",
   },
   {
-    name: "lastName",
+    name: "lastname",
     label: "Last Name",
     type: "text",
   },
@@ -43,7 +43,7 @@ export const basicInfoErrorMessages = {
   GENERIC_ERROR: "There was an error updating your information.",
 } as const;
 
-export default function BasicInfoForm() {
+export default function BasicInfoForm({ user }: { user: any }) {
   const [error, setError] = useState<string | null>(null);
   const { GENERIC_ERROR } = basicInfoErrorMessages;
 
@@ -74,6 +74,11 @@ export default function BasicInfoForm() {
         formWrapperClassName="w-full flex flex-col"
         formFieldElClass="w-full"
         onSubmit={handleUpdateInfo}
+        defaultValues={{
+          username: user?.username,
+          firstname: user?.firstname,
+          lastname: user?.lastname,
+        }}
         actionButtonsComponent={
           <div className="flex flex-col gap-4">
             <Button

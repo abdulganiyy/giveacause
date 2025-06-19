@@ -4,48 +4,55 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import FormFactory from "@/components/custom/form-factory";
 import type { FieldConfig, FormValues } from "@/types";
-import { bankInfoFormSchema } from "@/schema/user";
+import { validIDInfoFormSchema } from "@/schema/user";
 import apiService from "@/lib/apiService";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { banks } from "@/lib/utils";
 
-export const bankInfoFormFields: FieldConfig[] = [
+export const validIDInfoFormFields: FieldConfig[] = [
   {
-    name: "bankName",
-    label: "Bank Name",
-    type: "select",
-    placeholder: "Select a bank",
-    options: banks,
+    name: "id",
+    label: "Valid ID Document",
+    type: "files",
+    fileUploadOptions: {
+      maxFiles: 1,
+      maxSize: 1024 * 1024,
+      accept: { "image/*": [".jpg", ".jpeg", ".png"] },
+    },
   },
   {
-    name: "accountNumber",
-    label: "Bank Account Number",
-    type: "account-number",
+    name: "address",
+    label: "Proof Of Address",
+    type: "files",
+    fileUploadOptions: {
+      maxFiles: 1,
+      maxSize: 1024 * 1024,
+      accept: { "image/*": [".jpg", ".jpeg", ".png"] },
+    },
   },
   {
-    name: "accountName",
-    label: "Bank Account Name",
-    type: "text",
+    name: "other",
+    label: "Other Document",
+    type: "files",
+    fileUploadOptions: {
+      maxFiles: 1,
+      maxSize: 1024 * 1024,
+      accept: { "image/*": [".jpg", ".jpeg", ".png"] },
+    },
   },
-  // {
-  //   name: "bvn",
-  //   label: "BVN",
-  //   type: "text",
-  // },
 ];
 
-export const bankInfoErrorMessages = {
+export const basicInfoErrorMessages = {
   GENERIC_ERROR: "There was an error updating your information.",
 } as const;
 
-export default function BankInfoForm({ user }: { user: any }) {
+export default function ValidIDInfoForm() {
   const [error, setError] = useState<string | null>(null);
-  const { GENERIC_ERROR } = bankInfoErrorMessages;
+  const { GENERIC_ERROR } = basicInfoErrorMessages;
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (payload: any) => {
-      const response = await apiService.patch(`/user`, payload);
+      const response = await apiService.patch(`/document`, payload);
 
       return response.data;
     },
@@ -60,21 +67,17 @@ export default function BankInfoForm({ user }: { user: any }) {
   async function handleUpdateInfo(data: FormValues | any): Promise<void> {
     console.log(data);
     // setError(null);
-    mutate({ ...data });
+    // mutate({ ...data });
   }
 
   return (
     <>
       <FormFactory
-        fields={bankInfoFormFields}
-        schema={bankInfoFormSchema}
+        fields={validIDInfoFormFields}
+        schema={validIDInfoFormSchema}
         formWrapperClassName="w-full flex flex-col"
         formFieldElClass="w-full"
         onSubmit={handleUpdateInfo}
-        defaultValues={{
-          accountNumber: user?.accountNumber,
-          accountName: user?.accountName,
-        }}
         actionButtonsComponent={
           <div className="flex flex-col gap-4">
             <Button

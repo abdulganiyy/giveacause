@@ -14,6 +14,7 @@ import type { FieldConfig, FormValues } from "@/types";
 import { campaignFormSchema } from "@/schema/donation";
 import apiService from "@/lib/apiService";
 import { useMutation } from "@tanstack/react-query";
+import { Plus } from "lucide-react";
 import { toast } from "sonner";
 // import axios from "axios";
 // import { values } from "lodash";
@@ -45,7 +46,7 @@ export const campaignFormFields: FieldConfig[] = [
     name: "targetAmount",
     label: "Amount",
     type: "number",
-    placeholder: "Enter amount to raise",
+    placeholder: "Enter amount to raise in naira",
   },
   {
     name: "deadline",
@@ -80,33 +81,17 @@ export default function CreateCampaignModal() {
   async function handleCreateCampaign(data: FormValues | any): Promise<void> {
     setError(null);
     mutate({ ...data, imageUrl: data.imageUrl[0].url, currency: "₦" });
-
-    // console.log(data);
-
-    // const { confirmPassword, role, picture, ...payload } = data;
-
-    // try {
-    //   await apiService.post("/user", {
-    //     ...payload,
-    //     roleId: role,
-    //     profilePictureId: picture.id,
-    //   });
-
-    //   setIsSubmitting(false);
-    //   toast({ description: "New user has been successfully created" });
-    // } catch (error: any) {
-    //   setError(GENERIC_ERROR);
-    //   setIsSubmitting(false);
-    //   toast({ variant: "destructive", description: error.message });
-    // }
   }
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className="bg-black text-white">Add New Campaign</Button>
+        <Button className="bg-green-600 hover:bg-green-700">
+          <Plus className="mr-2 h-4 w-4" />
+          Add New Campaign
+        </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Campaign</DialogTitle>
         </DialogHeader>
@@ -121,7 +106,7 @@ export default function CreateCampaignModal() {
               <Button
                 type="submit"
                 disabled={isPending}
-                className="bg-black text-white"
+                className="bg-green-600 hover:bg-green-700"
               >
                 {isPending ? "Submitting..." : "Submit"}
               </Button>

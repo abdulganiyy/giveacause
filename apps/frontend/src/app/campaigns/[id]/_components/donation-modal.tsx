@@ -1,11 +1,18 @@
 "use client";
-
-import type React from "react";
-
+// import type React from "react";
 import { useState } from "react";
 import { usePaystackPayment } from "react-paystack";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, X, AlertCircle, Heart } from "lucide-react";
+import {
+  Check,
+  X,
+  AlertCircle,
+  Heart,
+  DollarSign,
+  Loader2,
+  Info,
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 import {
   Dialog,
@@ -19,19 +26,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
+import { useUser } from "@/hooks/useUser";
 
 import { submitDonation } from "@/lib/api";
 
 // Define predefined donation amounts
-const DONATION_AMOUNTS = [500, 1000, 5000, 10000, 20000];
+const SUGGESTED_AMOUNTS = [500, 1000, 5000, 10000, 20000];
+const TIP_PERCENTAGES = [0, 10, 15, 20];
 
 interface DonationModalProps {
   isOpen: boolean;
   onClose: () => void;
   campaignId: string;
   campaignTitle: string;
+  paystackSubAccountId: string;
+  campaignCreatorName: string;
 }
 
 export default function DonationModal({
@@ -39,16 +53,34 @@ export default function DonationModal({
   onClose,
   campaignId,
   campaignTitle,
+  paystackSubAccountId,
+  campaignCreatorName,
 }: DonationModalProps) {
-  const [step, setStep] = useState(1);
-  const [amount, setAmount] = useState<number>(50);
+  const [donationAmount, setDonationAmount] = useState<number>(500);
   const [customAmount, setCustomAmount] = useState<string>("");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [anonymous, setAnonymous] = useState(false);
-  const [paymentError, setPaymentError] = useState<string | null>(null);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [tipPercentage, setTipPercentage] = useState<number>(15);
+  const [customTip, setCustomTip] = useState<string>("");
+  const [donorName, setDonorName] = useState<string>("");
+  const [donorEmail, setDonorEmail] = useState<string>("");
+  const [message, setMessage] = useState<string>("");
+  const [anonymous, setAnonymous] = useState<boolean>(false);
+  const [useCustomAmount, setUseCustomAmount] = useState<boolean>(false);
+  const [useCustomTip, setUseCustomTip] = useState<boolean>(false);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<boolean>(false);
+
+  const { data: user } = useUser();
+
+  const queryClient = useQueryClient();
+
+  const finalDonationAmount = useCustomAmount
+    ? Number.parseFloat(customAmount) || 0
+    : donationAmount;
+  const platformTip = useCustomTip
+    ? Number.parseFloat(customTip) || 0
+    : Math.round(((finalDonationAmount * tipPercentage) / 100) * 100) / 100;
+  const totalAmount = finalDonationAmount + platformTip;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -59,8 +91,6 @@ export default function DonationModal({
     }).format(amount);
   };
 
-  const queryClient = useQueryClient();
-
   // Mutation for submitting donation
   const { mutate, isPending } = useMutation({
     mutationFn: submitDonation,
@@ -68,352 +98,378 @@ export default function DonationModal({
       // Invalidate and refetch donations query
       queryClient.invalidateQueries({ queryKey: ["donations", campaignId] });
       queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
-      setPaymentSuccess(true);
-      setStep(3);
+      setSuccess(true);
     },
     onError: (error) => {
-      setPaymentError("Failed to process donation. Please try again.");
+      setError("Failed to process donation. Please try again.");
       console.error("Donation error:", error);
     },
   });
 
-  // Calculate the actual amount to use (either predefined or custom)
-  const actualAmount = customAmount ? Number.parseFloat(customAmount) : amount;
-
   // Paystack configuration
   const config = {
     reference: new Date().getTime().toString(),
-    email: email,
-    amount: actualAmount * 100, // Paystack amount is in kobo (100 kobo = 1 Naira)
+    email: donorEmail,
+    amount: totalAmount * 100, // Paystack amount is in kobo (100 kobo = 1 Naira)
     publicKey:
       process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_yourtestkeyhere",
+    subaccount: paystackSubAccountId || "ACCT_3sxy5l17xft2umo",
+    transaction_charge: platformTip * 100,
+    bearer: "subaccount",
   };
 
-  // Initialize Paystack payment hook
-  const initializePayment = usePaystackPayment(config);
+  const initializePayment = usePaystackPayment(config as any);
 
-  // Handle form submission for step 1
-  const handleStep1Submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !name || actualAmount <= 0) {
-      setPaymentError("Please fill in all required fields.");
+  const handlePayment = () => {
+    if ((!donorName && !anonymous) || !donorEmail || finalDonationAmount <= 0) {
+      setError(
+        "Please fill in all required fields and enter a valid donation amount"
+      );
       return;
     }
-    setPaymentError(null);
-    setStep(2);
-  };
 
-  // Handle payment initialization
-  const handlePayment = () => {
-    // You can perform additional validation here
+    if (!/\S+@\S+\.\S+/.test(donorEmail)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    // toast(`${finalDonationAmount}, ${platformTip}, ${totalAmount}`);
+
+    setError("");
+
     initializePayment({
       onSuccess: () => {
-        // Submit donation to your API after successful payment
         mutate({
           campaignId,
-          name: anonymous ? "Anonymous" : name,
-          email,
-          amount: actualAmount,
+          userId: user.userId,
+          name: anonymous ? "Anonymous" : donorName,
+          email: donorEmail,
+          amount: finalDonationAmount,
           message,
           anonymous,
         });
       },
       onClose: () => {
-        setPaymentError("Payment was cancelled.");
+        setError("Payment was cancelled.");
       },
     });
   };
 
-  // Handle modal close and reset state
   const handleClose = () => {
-    if (!isPending) {
+    if (!isProcessing) {
+      setDonationAmount(50);
+      setCustomAmount("");
+      setTipPercentage(15);
+      setCustomTip("");
+      setDonorName("");
+      setDonorEmail("");
+      setMessage("");
+      setAnonymous(false);
+      setUseCustomAmount(false);
+      setUseCustomTip(false);
+      setError("");
+      setSuccess(false);
       onClose();
-      // Reset state after animation completes
-      setTimeout(() => {
-        setStep(1);
-        setAmount(50);
-        setCustomAmount("");
-        setName("");
-        setEmail("");
-        setMessage("");
-        setAnonymous(false);
-        setPaymentError(null);
-        setPaymentSuccess(false);
-      }, 300);
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        {step === 1 && (
-          <>
-            <DialogHeader>
-              <DialogTitle className="flex items-center">
-                <Heart className="h-5 w-5 text-red-500 mr-2" />
-                Make a Donation
-              </DialogTitle>
-              <DialogDescription>
-                Support "{campaignTitle}" with your contribution.
-              </DialogDescription>
-            </DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center space-x-2">
+            <Heart className="h-5 w-5 text-red-500" />
+            <span>Support {campaignTitle}</span>
+          </DialogTitle>
+          <DialogDescription>
+            Your donation will help {campaignCreatorName} reach their goal
+          </DialogDescription>
+        </DialogHeader>
 
-            <form onSubmit={handleStep1Submit} className="space-y-6 py-4">
-              {paymentError && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>{paymentError}</AlertDescription>
-                </Alert>
-              )}
+        {success ? (
+          <div className="text-center py-8">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Heart className="h-8 w-8 text-green-600" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              Thank you for your donation!
+            </h3>
+            <p className="text-gray-600">
+              Your ₦{finalDonationAmount.toFixed(2)} donation has been
+              successfully processed.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
 
-              <div className="space-y-2">
-                <Label htmlFor="amount">Select Donation Amount</Label>
+            {/* Donation Amount */}
+            <div>
+              <Label className="text-base font-semibold">Donation Amount</Label>
+              <div className="mt-3 space-y-3">
+                <div className="grid grid-cols-3 gap-2">
+                  {SUGGESTED_AMOUNTS.map((amount) => (
+                    <Button
+                      key={amount}
+                      variant={
+                        !useCustomAmount && donationAmount === amount
+                          ? "default"
+                          : "outline"
+                      }
+                      onClick={() => {
+                        setDonationAmount(amount);
+                        setUseCustomAmount(false);
+                      }}
+                      className="h-12"
+                      disabled={isProcessing}
+                    >
+                      {/* ₦{amount} */}
+                      {amount.toLocaleString("en-NG", {
+                        style: "currency",
+                        currency: "NGN",
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0,
+                      })}
+                    </Button>
+                  ))}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="custom-amount"
+                    checked={useCustomAmount}
+                    onCheckedChange={(checked) =>
+                      setUseCustomAmount(checked as boolean)
+                    }
+                    disabled={isProcessing}
+                  />
+                  <Label htmlFor="custom-amount">Other amount</Label>
+                </div>
+                {useCustomAmount && (
+                  <div className="relative">
+                    {/* <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" /> */}
+
+                    <span className="absolute left-3 top-[14px] transform -translate-y-1/2 h-4 w-4 text-gray-400">
+                      ₦
+                    </span>
+                    <Input
+                      type="number"
+                      placeholder="Enter amount"
+                      value={customAmount}
+                      onChange={(e) => setCustomAmount(e.target.value)}
+                      className="pl-10"
+                      min="1"
+                      disabled={isProcessing}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Platform Tip */}
+            <Card className="bg-blue-50 border-blue-200">
+              <CardContent className="p-4">
+                <div className="flex items-start space-x-2 mb-3">
+                  <Info className="h-4 w-4 text-blue-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-blue-900">
+                      Support FundHope
+                    </h4>
+                    <p className="text-sm text-blue-700">
+                      Help us keep the platform running and support more causes
+                      like this one
+                    </p>
+                  </div>
+                </div>
+
                 <RadioGroup
-                  defaultValue={amount.toString()}
+                  value={useCustomTip ? "custom" : tipPercentage.toString()}
                   onValueChange={(value) => {
-                    setAmount(Number.parseInt(value));
-                    setCustomAmount("");
+                    if (value === "custom") {
+                      setUseCustomTip(true);
+                    } else {
+                      setUseCustomTip(false);
+                      setTipPercentage(Number.parseInt(value));
+                    }
                   }}
-                  className="grid grid-cols-3 gap-2"
+                  className="grid grid-cols-2 gap-2"
+                  disabled={isProcessing}
                 >
-                  {DONATION_AMOUNTS.map((amt) => (
-                    <div key={amt} className="flex items-center space-x-2">
+                  {TIP_PERCENTAGES.map((percentage) => (
+                    <div
+                      key={percentage}
+                      className="flex items-center space-x-2"
+                    >
                       <RadioGroupItem
-                        value={amt.toString()}
-                        id={`amount-${amt}`}
+                        value={percentage.toString()}
+                        id={`tip-${percentage}`}
                       />
-                      <Label
-                        htmlFor={`amount-${amt}`}
-                        className="cursor-pointer"
-                      >
-                        {formatCurrency(amt)}
+                      <Label htmlFor={`tip-${percentage}`} className="text-sm">
+                        {percentage === 0
+                          ? "No tip"
+                          : `${percentage}% (₦${Math.round(((finalDonationAmount * percentage) / 100) * 100) / 100})`}
                       </Label>
                     </div>
                   ))}
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="custom" id="tip-custom" />
+                    <Label htmlFor="tip-custom" className="text-sm">
+                      Custom
+                    </Label>
+                  </div>
                 </RadioGroup>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="customAmount">Custom Amount</Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                    ₦
-                  </span>
+                {useCustomTip && (
+                  <div className="mt-3 relative">
+                    {/* <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" /> */}
+                    <span className="absolute left-3 top-[14px] transform -translate-y-1/2 h-4 w-4 text-gray-400">
+                      ₦
+                    </span>
+                    <Input
+                      type="number"
+                      placeholder="Enter tip amount"
+                      value={customTip}
+                      onChange={(e) => setCustomTip(e.target.value)}
+                      className="pl-10"
+                      min="0"
+                      step="0.01"
+                      disabled={isProcessing}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Total Summary */}
+            <Card>
+              <CardContent className="p-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>Your donation</span>
+                    <span>
+                      {/* ₦{finalDonationAmount.toFixed(2)} */}
+                      {finalDonationAmount.toLocaleString("en-NG", {
+                        style: "currency",
+                        currency: "NGN",
+                      })}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>FundHope tip</span>
+                    <span>
+                      {/* ₦{platformTip.toFixed(2)} */}
+                      {platformTip.toLocaleString("en-NG", {
+                        style: "currency",
+                        currency: "NGN",
+                      })}
+                    </span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between font-semibold">
+                    <span>Total</span>
+                    <span>
+                      {/* ₦{totalAmount.toFixed(2)} */}
+                      {totalAmount.toLocaleString("en-NG", {
+                        style: "currency",
+                        currency: "NGN",
+                      })}
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Donor Information */}
+            <div className="space-y-4">
+              <Label className="text-base font-semibold">
+                Your Information
+              </Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="donor-name">Full Name *</Label>
                   <Input
-                    id="customAmount"
-                    placeholder="Enter amount"
-                    className="pl-8"
-                    value={customAmount}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      // Only allow numbers and decimal point
-                      if (value === "" || /^\d+(\.\d{0,2})?$/.test(value)) {
-                        setCustomAmount(value);
-                        setAmount(0); // Clear selected amount
-                      }
-                    }}
+                    id="donor-name"
+                    value={donorName}
+                    onChange={(e) => setDonorName(e.target.value)}
+                    placeholder="Enter your name"
+                    required
+                    disabled={isProcessing}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="donor-email">Email Address *</Label>
+                  <Input
+                    id="donor-email"
+                    type="email"
+                    value={donorEmail}
+                    onChange={(e) => setDonorEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    required
+                    disabled={isProcessing}
                   />
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="name">Your Name</Label>
-                <Input
-                  id="name"
-                  placeholder="Enter your name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required={!anonymous}
-                  disabled={anonymous}
-                />
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="anonymous"
-                  checked={anonymous}
-                  onChange={(e) => {
-                    setAnonymous(e.target.checked);
-                    if (e.target.checked) {
-                      setName("Anonymous");
-                    } else {
-                      setName("");
-                    }
-                  }}
-                  className="rounded border-gray-300"
-                />
-                <Label htmlFor="anonymous" className="cursor-pointer">
-                  Donate anonymously
-                </Label>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
+              <div>
                 <Label htmlFor="message">Message (Optional)</Label>
                 <Textarea
                   id="message"
-                  placeholder="Add a message of support"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Leave a message of support..."
                   rows={3}
+                  disabled={isProcessing}
                 />
               </div>
-
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={handleClose}>
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  Continue
-                </Button>
-              </DialogFooter>
-            </form>
-          </>
-        )}
-
-        {step === 2 && (
-          <>
-            <DialogHeader>
-              <DialogTitle>Confirm Your Donation</DialogTitle>
-              <DialogDescription>
-                Please review your donation details before proceeding to
-                payment.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="py-4 space-y-4">
-              {paymentError && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>{paymentError}</AlertDescription>
-                </Alert>
-              )}
-
-              <div className="bg-gray-50 p-4 rounded-lg space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Donation Amount:</span>
-                  <span className="font-semibold">
-                    ${actualAmount.toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Name:</span>
-                  <span>{anonymous ? "Anonymous" : name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Email:</span>
-                  <span>{email}</span>
-                </div>
-                {message && (
-                  <div className="pt-2 border-t border-gray-200">
-                    <span className="text-gray-600 block mb-1">Message:</span>
-                    <p className="text-sm italic">"{message}"</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="text-sm text-gray-500">
-                <p>
-                  By clicking "Proceed to Payment", you'll be redirected to
-                  Paystack's secure payment gateway to complete your donation.
-                </p>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="anonymous"
+                  checked={anonymous}
+                  onCheckedChange={(checked) =>
+                    setAnonymous(checked as boolean)
+                  }
+                  disabled={isProcessing}
+                />
+                <Label htmlFor="anonymous">Make this donation anonymous</Label>
               </div>
             </div>
 
-            <DialogFooter className="gap-2">
-              <Button variant="outline" onClick={() => setStep(1)}>
-                Back
-              </Button>
+            {/* Payment Button */}
+            <div className="flex space-x-3">
               <Button
                 onClick={handlePayment}
-                className="bg-green-600 hover:bg-green-700"
+                className="flex-1 bg-green-600 hover:bg-green-700"
+                size="lg"
+                disabled={isProcessing}
               >
-                Proceed to Payment
-              </Button>
-            </DialogFooter>
-          </>
-        )}
-
-        {step === 3 && (
-          <>
-            <DialogHeader>
-              <DialogTitle className="flex items-center">
-                {paymentSuccess ? (
-                  <Check className="h-5 w-5 text-green-500 mr-2" />
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
                 ) : (
-                  <X className="h-5 w-5 text-red-500 mr-2" />
+                  <>
+                    <Heart className="mr-2 h-4 w-4" />
+                    Donate{" "}
+                    {totalAmount.toLocaleString("en-NG", {
+                      style: "currency",
+                      currency: "NGN",
+                    })}
+                  </>
                 )}
-                {paymentSuccess
-                  ? "Thank You for Your Donation!"
-                  : "Payment Failed"}
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="py-6">
-              {paymentSuccess ? (
-                <div className="text-center space-y-4">
-                  <div className="bg-green-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto">
-                    <Check className="h-8 w-8 text-green-500" />
-                  </div>
-                  <p>
-                    Your donation of <strong>${actualAmount.toFixed(2)}</strong>{" "}
-                    has been successfully processed. Thank you for your
-                    generosity!
-                  </p>
-                  <div className="pt-4">
-                    <p className="text-sm text-gray-500">
-                      A receipt has been sent to your email address. Your
-                      support makes a real difference!
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center space-y-4">
-                  <div className="bg-red-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto">
-                    <X className="h-8 w-8 text-red-500" />
-                  </div>
-                  <p>
-                    We couldn't process your donation at this time. Please check
-                    your payment details and try again.
-                  </p>
-                  <div className="pt-4">
-                    <p className="text-sm text-gray-500">
-                      If you continue to experience issues, please contact our
-                      support team for assistance.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <DialogFooter>
-              <Button
-                onClick={handleClose}
-                className={
-                  paymentSuccess ? "bg-green-600 hover:bg-green-700" : ""
-                }
-              >
-                Close
               </Button>
-            </DialogFooter>
-          </>
+              <Button
+                variant="outline"
+                onClick={handleClose}
+                size="lg"
+                disabled={isProcessing}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
         )}
       </DialogContent>
     </Dialog>

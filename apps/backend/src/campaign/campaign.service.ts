@@ -57,6 +57,13 @@ export class CampaignService {
         orderBy: { [sortBy]: sortOrder },
         skip: (page - 1) * limit,
         take: limit,
+          include: {
+        _count: {
+          select: {
+            donations: true,
+          },
+        },
+      },
       }),
       this.prisma.campaign.count({ where }),
     ]);
@@ -78,11 +85,11 @@ export class CampaignService {
     return this.prisma.campaign.findFirst({where:{id},include:{donations:true,creator:true}})
   }
 
-  update(id: number, updateCampaignDto: UpdateCampaignDto) {
-    return `This action updates a #${id} campaign`;
+  update(id: string, updateCampaignDto: UpdateCampaignDto) {
+    return this.prisma.campaign.update({where:{id},data:updateCampaignDto})
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} campaign`;
+  remove(id: string) {
+    return this.prisma.campaign.delete({where:{id}})
   }
 }

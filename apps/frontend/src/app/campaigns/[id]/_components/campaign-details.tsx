@@ -27,8 +27,16 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { getDaysBetweenDates } from "@/lib/utils";
 import DonationModal from "../_components/donation-modal";
+import { FlyerGenerator } from "@/components/flyer-generator";
+import type { FlyerData } from "@/lib/flyer-generator";
 
 interface CampaignDetailProps {
   campaign: any;
@@ -47,6 +55,7 @@ export default function CampaignDetail({
 }: CampaignDetailProps) {
   const [showAllDonations, setShowAllDonations] = useState(false);
   const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
+  const [isFlyerModalOpen, setIsFlyerModalOpen] = useState(false);
 
   const displayedDonations = showAllDonations
     ? donations
@@ -60,6 +69,43 @@ export default function CampaignDetail({
       maximumFractionDigits: 0,
     }).format(amount);
   };
+
+  const handleShare = (platform: string) => {
+    const url = window.location.href;
+    const text = `Help support: ${campaign?.title}`;
+
+    const shareUrls = {
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`,
+    };
+
+    const shareUrl = shareUrls[platform as keyof typeof shareUrls];
+    if (shareUrl) {
+      window.open(shareUrl, "_blank", "width=600,height=400");
+    }
+  };
+
+  // Prepare flyer data
+  const flyerData: FlyerData | undefined = campaign
+    ? {
+        campaignTitle: campaign.title,
+        campaignDescription: campaign.description,
+        targetAmount: campaign.targetAmount,
+        currentAmount: campaign.currentAmount,
+        donorCount: campaign.donations.length,
+        daysLeft: getDaysBetweenDates(campaign.deadline),
+        organizerName:
+          campaign.creator.firstname + " " + campaign.creator.lastname,
+        category: campaign.category?.name || "General",
+        campaignUrl: window.location.href,
+        campaignImage: campaign.imageUrl,
+      }
+    : undefined;
+
+  // Check if current user is the campaign owner (mock check)
+  const isOwner = true; // In real app, check against authenticated user
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -77,10 +123,31 @@ export default function CampaignDetail({
                   All Campaigns
                 </Button>
               </Link>
-              <Button variant="outline" size="sm">
-                <Share2 className="h-4 w-4 mr-2" />
-                Share
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="lg">
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Share
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-full">
+                  <DropdownMenuItem onClick={() => handleShare("facebook")}>
+                    Facebook
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleShare("twitter")}>
+                    Twitter
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleShare("linkedin")}>
+                    LinkedIn
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleShare("whatsapp")}>
+                    WhatsApp
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsFlyerModalOpen(true)}>
+                    Generate Flyer
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
@@ -222,7 +289,8 @@ export default function CampaignDetail({
                       </Avatar>
                       <div>
                         <p className="font-medium text-gray-900">
-                          {campaign?.creator?.firstname}
+                          {campaign?.creator?.firstname}{" "}
+                          {campaign?.creator?.lastname}
                         </p>
                         <p className="text-sm text-gray-500">
                           {campaign?.creator?.relationship}
@@ -243,10 +311,22 @@ export default function CampaignDetail({
                       <div>
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-2xl font-bold text-gray-900">
-                            {formatCurrency(campaign.currentAmount)}
+                            {/* {formatCurrency(campaign.currentAmount)} */}
+                            {campaign.currentAmount.toLocaleString("en-NG", {
+                              style: "currency",
+                              currency: "NGN",
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 0,
+                            })}
                           </span>
                           <span className="text-sm text-gray-500">
-                            raised of {formatCurrency(campaign.targetAmount)}{" "}
+                            raised of{" "}
+                            {campaign.targetAmount.toLocaleString("en-NG", {
+                              style: "currency",
+                              currency: "NGN",
+                              minimumFractionDigits: 0,
+                              maximumFractionDigits: 0,
+                            })}{" "}
                             goal
                           </span>
                         </div>
@@ -292,10 +372,45 @@ export default function CampaignDetail({
                       <span className="inline-block text-lg mr-2">₦</span>
                       Donate Now
                     </Button>
-                    <Button variant="outline" className="w-full" size="lg">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="w-full" size="lg">
+                          <Share2 className="h-4 w-4 mr-2" />
+                          Share Campaign
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-full">
+                        <DropdownMenuItem
+                          onClick={() => handleShare("facebook")}
+                        >
+                          Facebook
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleShare("twitter")}
+                        >
+                          Twitter
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleShare("linkedin")}
+                        >
+                          LinkedIn
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleShare("whatsapp")}
+                        >
+                          WhatsApp
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setIsFlyerModalOpen(true)}
+                        >
+                          Generate Flyer
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    {/* <Button variant="outline" className="w-full" size="lg">
                       <Share2 className="h-4 w-4 mr-2" />
                       Share
-                    </Button>
+                    </Button> */}
                   </CardContent>
                 </Card>
 
@@ -420,8 +535,18 @@ export default function CampaignDetail({
         <DonationModal
           isOpen={isDonationModalOpen}
           onClose={() => setIsDonationModalOpen(false)}
+          campaignCreatorName={campaign.creator.name}
           campaignId={campaign.id}
           campaignTitle={campaign.title}
+          paystackSubAccountId={campaign.creator.paystackSubAccountId}
+        />
+      )}
+      {/* Flyer Generator Modal */}
+      {flyerData && (
+        <FlyerGenerator
+          isOpen={isFlyerModalOpen}
+          onClose={() => setIsFlyerModalOpen(false)}
+          campaignData={flyerData}
         />
       )}
     </div>

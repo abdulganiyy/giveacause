@@ -61,7 +61,10 @@ const categories = [
 
 export default function CampaignsListingPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const [selectedCategory, setSelectedCategory] = useState({
+    name: "All Categories",
+    id: "All Categories",
+  });
   const [sortBy, setSortBy] = useState("Most Recent");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -97,7 +100,7 @@ export default function CampaignsListingPage() {
     queryFn: () =>
       fetchCampaigns(
         debouncedSearchQuery,
-        selectedCategory,
+        selectedCategory.id,
         currentPage,
         sortBy
       ),
@@ -184,10 +187,22 @@ export default function CampaignsListingPage() {
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="font-medium">
-                    {formatCurrency(campaign.currentAmount)}
+                    {/* {formatCurrency(campaign.currentAmount)} */}
+                    {campaign.currentAmount.toLocaleString("en-NG", {
+                      style: "currency",
+                      currency: "NGN",
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    })}
                   </span>
                   <span className="text-gray-500">
-                    of {formatCurrency(campaign.targetAmount)}
+                    of{" "}
+                    {campaign.targetAmount.toLocaleString("en-NG", {
+                      style: "currency",
+                      currency: "NGN",
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    })}
                   </span>
                 </div>
                 <Progress
@@ -204,7 +219,7 @@ export default function CampaignsListingPage() {
             <div className="flex justify-between w-full text-xs text-gray-500">
               <div className="flex items-center">
                 <Users className="h-3 w-3 mr-1" />
-                <span>{campaign.donorCount} donors</span>
+                <span>{campaign._count?.donations || 0} donors</span>
               </div>
               <div className="flex items-center">
                 <Calendar className="h-3 w-3 mr-1" />
@@ -317,15 +332,27 @@ export default function CampaignsListingPage() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="flex items-center">
                     <Filter className="h-4 w-4 mr-2" />
-                    {selectedCategory}
+                    {selectedCategory.name}
                     <ChevronDown className="h-4 w-4 ml-2" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  {categories.map((category: any) => (
+                  {[
+                    { name: "All Categories", id: "All Categories" },
+                    ...categories,
+                  ].map((category: any) => (
                     <DropdownMenuItem
                       key={category.id}
-                      onClick={() => setSelectedCategory(category.name)}
+                      onClick={() => {
+                        if (category.id == "all") {
+                          setSelectedCategory({
+                            name: "All Categories",
+                            id: "All Categories",
+                          });
+                        } else {
+                          setSelectedCategory(category);
+                        }
+                      }}
                     >
                       {category.name}
                     </DropdownMenuItem>
@@ -398,7 +425,10 @@ export default function CampaignsListingPage() {
                         className="mt-4"
                         onClick={() => {
                           setSearchQuery("");
-                          setSelectedCategory("All Categories");
+                          setSelectedCategory({
+                            name: "All Categories",
+                            id: "All Categories",
+                          });
                           refetchCampaigns();
                         }}
                       >

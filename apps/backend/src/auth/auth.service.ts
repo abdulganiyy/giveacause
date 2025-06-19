@@ -29,7 +29,7 @@ export class AuthService {
     }
 
  
-    const payload = { userId: user.id,email:user.email,firstname: user.firstname,lastname: user.lastname,role:user.role.name };
+    const payload = { userId: user.id,email:user.email,firstname: user.firstname,lastname: user.lastname,role:user.role.name ,status:user.status};
 
 
     return {
@@ -52,7 +52,7 @@ async signUp(email: string,firstname: string,lastname: string, pass: string): Pr
    const newUser = await this.usersService.create({email,password:passwordHash,lastname,firstname,roleId:userRole.id})
 
  
-    const payload = { userId: newUser.userId,email:newUser.email, username: newUser.username, firstname: newUser.firstname,role:userRole.name };
+    const payload = { userId: newUser.userId,email:newUser.email, username: newUser.username, firstname: newUser.firstname,role:userRole.name,status:user.status};
 
     // await this.emailService.sendEmail(newUser.email,
     //   'Welcome to Our App!',

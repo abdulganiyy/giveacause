@@ -6,5 +6,6 @@ import { PrismaService } from 'src/prisma.service';
 @Module({
   controllers: [CampaignController],
   providers: [CampaignService,PrismaService],
+  exports:[CampaignService]
 })
 export class CampaignModule {}

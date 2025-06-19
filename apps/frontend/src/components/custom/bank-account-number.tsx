@@ -37,15 +37,7 @@ export function BankAccountInput({
       bank_code: string;
     }) => {
       const res = await fetch(
-        `https://api.paystack.co/bank/resolve?account_number=${account_number}&bank_code=${bank_code}`,
-        {
-          //   method: "POST",
-          //   headers: { "Content-Type": "application/json" },
-          //   body: JSON.stringify({ account_number, bank_code }),
-          headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_PAYSTACK_SECRET_KEY}`,
-          },
-        }
+        `${process.env.NEXT_PUBLIC_API_URL}/paystack/verify-account?accountNumber=${account_number}&bankCode=${bank_code}`
       );
 
       if (!res.ok) throw new Error("Invalid account details");
@@ -76,7 +68,7 @@ export function BankAccountInput({
       (bank) => bank.value == getValues("bankName")
     )?.value;
 
-    console.log(getValues("bankName"), accountNumber, bankCode);
+    // console.log(getValues("bankName"), accountNumber, bankCode);
 
     if (accountNumber && bankCode) {
       debouncedVerify(accountNumber, bankCode);

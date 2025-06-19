@@ -3,7 +3,27 @@ import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
 export class CreateUserDto {
   @IsOptional()
   @IsString()
-  name?: string;
+  username?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @IsOptional()
+  @IsString()
+  address?: string;
+
+  @IsOptional()
+  @IsString()
+  bankName?: string;
+
+  @IsOptional()
+  @IsString()
+  accountName?: string;
+
+  @IsOptional()
+  @IsString()
+  accountNumber?: string;
 
   @IsString()
   firstname: string;
@@ -22,9 +42,13 @@ export class CreateUserDto {
   @IsString()
   avatarUrl?: string;
 
+  // @IsOptional()
+  // @IsString()
+  // stripeCustomerId?: string;
+
   @IsOptional()
   @IsString()
-  stripeCustomerId?: string;
+  paystackSubAccountId?: string;
 
   @IsString()
   roleId: string;
