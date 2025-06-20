@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,48 +13,10 @@ import FormFactory from "@/components/custom/form-factory";
 import type { FieldConfig, FormValues } from "@/types";
 import { campaignFormSchema } from "@/schema/donation";
 import apiService from "@/lib/apiService";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-// import axios from "axios";
-// import { values } from "lodash";
-
-export const campaignFormFields: FieldConfig[] = [
-  {
-    name: "title",
-    label: "Title",
-    type: "text",
-    placeholder: "Enter campaign title",
-  },
-  {
-    name: "description",
-    label: "Description",
-    type: "textarea",
-    placeholder: "Enter campaign description",
-  },
-  {
-    name: "imageUrl",
-    label: "Campaign Image",
-    type: "files",
-    fileUploadOptions: {
-      maxFiles: 1,
-      maxSize: 1024 * 1024,
-      accept: { "image/*": [".jpg", ".jpeg", ".png"] },
-    },
-  },
-  {
-    name: "targetAmount",
-    label: "Amount",
-    type: "number",
-    placeholder: "Enter amount to raise in naira",
-  },
-  {
-    name: "deadline",
-    label: "Campaign Deadline",
-    type: "date",
-    placeholder: "Enter due date to raise the amount",
-  },
-];
+import { fetchCategories } from "@/lib/api";
 
 export const createCampaignErrorMessages = {
   GENERIC_ERROR: "There was an error creating a campaign.",
@@ -63,6 +25,59 @@ export const createCampaignErrorMessages = {
 export default function CreateCampaignModal() {
   const [error, setError] = useState<string | null>(null);
   const { GENERIC_ERROR } = createCampaignErrorMessages;
+  const [isOpen, setIsOpen] = useState(false); // Track dialog open state
+
+  const {
+    data,
+    isLoading,
+    error: categoriesError,
+  } = useQuery({ queryKey: ["categories"], queryFn: fetchCategories });
+
+  const campaignFormFields: FieldConfig[] = [
+    {
+      name: "title",
+      label: "Title",
+      type: "text",
+      placeholder: "Enter campaign title",
+    },
+    {
+      name: "categoryId",
+      label: "Category",
+      type: "select",
+      options: data?.map((category: any) => ({
+        label: category?.name,
+        value: category?.id,
+      })),
+    },
+    {
+      name: "description",
+      label: "Description",
+      type: "textarea",
+      placeholder: "Enter campaign description",
+    },
+    {
+      name: "imageUrl",
+      label: "Campaign Image",
+      type: "files",
+      fileUploadOptions: {
+        maxFiles: 1,
+        maxSize: 1024 * 1024,
+        accept: { "image/*": [".jpg", ".jpeg", ".png"] },
+      },
+    },
+    {
+      name: "targetAmount",
+      label: "Amount",
+      type: "number",
+      placeholder: "Enter amount to raise in naira",
+    },
+    {
+      name: "deadline",
+      label: "Campaign Deadline",
+      type: "date",
+      placeholder: "Enter due date to raise the amount",
+    },
+  ];
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (payload: any) => {
@@ -72,6 +87,7 @@ export default function CreateCampaignModal() {
     },
     onSuccess: (data) => {
       toast("Campaign created succssfully");
+      setIsOpen(false); // Close modal on success
     },
     onError: (err: any) => {
       toast.error(GENERIC_ERROR);
@@ -84,9 +100,12 @@ export default function CreateCampaignModal() {
   }
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-green-600 hover:bg-green-700">
+        <Button
+          onClick={() => setIsOpen(true)}
+          className="bg-green-600 hover:bg-green-700"
+        >
           <Plus className="mr-2 h-4 w-4" />
           Add New Campaign
         </Button>
