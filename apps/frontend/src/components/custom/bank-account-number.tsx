@@ -20,6 +20,7 @@ export function BankAccountInput({
     register,
     setValue,
     getValues,
+    clearErrors,
     setError,
     watch,
     formState: { errors },
@@ -45,11 +46,12 @@ export function BankAccountInput({
     },
     onSuccess: (data) => {
       console.log(data);
-      setValue("bankAccountName", data.data.account_name);
+      setValue("accountName", data.account_name);
+      clearErrors("accountName");
     },
     onError: () => {
-      setValue("bankAccountName", "");
-      setError("bankAccountName", {
+      setValue("accountName", "");
+      setError("accountName", {
         type: "value",
         message: "Invalid account number",
       });

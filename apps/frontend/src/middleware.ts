@@ -18,7 +18,7 @@ export default async function middleware(req: NextRequest) {
 
   let isAuthenticated = false;
   try {
-    const response = await axios.get('http://localhost:3004/auth/profile', {
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile`, {
       headers: {
         Authorization:`Bearer ${token}`
       }

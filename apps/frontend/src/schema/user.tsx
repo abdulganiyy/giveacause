@@ -12,9 +12,9 @@ export const basicInfoFormSchema = yup.object().shape({
 
 export const bankInfoFormSchema = yup.object().shape({
   bankName: yup.string().required(REQUIRED),
-  bankAccountName: yup.string().required(REQUIRED),
-  bankAccountNumber: yup.string().optional(),
-  bvn: yup.string().optional(),
+  accountName: yup.string().required(REQUIRED),
+  accountNumber: yup.string().required(REQUIRED),
+  // bvn: yup.string().optional(),
 });
 
 export const validIDInfoFormSchema = yup.object().shape({

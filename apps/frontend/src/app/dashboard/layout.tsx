@@ -206,7 +206,7 @@ const Layout = ({
             </li>
           </ul>
           <ul className="pt-4 mt-4 space-y-2 font-medium border-t border-gray-200 dark:border-gray-700">
-            <li>
+            {/* <li>
               <Link
                 href="/dashboard"
                 className="flex items-center p-2 text-gray-900 transition duration-75 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group"
@@ -222,7 +222,7 @@ const Layout = ({
                 </svg>
                 <span className="ms-3">Help</span>
               </Link>
-            </li>
+            </li> */}
             <li>
               <button
                 onClick={logout}

@@ -72,6 +72,7 @@ export default function BankInfoForm({ user }: { user: any }) {
         formFieldElClass="w-full"
         onSubmit={handleUpdateInfo}
         defaultValues={{
+          bankName: banks.find((bank) => bank.value == user?.bankName)?.value,
           accountNumber: user?.accountNumber,
           accountName: user?.accountName,
         }}
