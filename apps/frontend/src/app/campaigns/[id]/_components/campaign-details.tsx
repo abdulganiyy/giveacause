@@ -255,7 +255,7 @@ export default function CampaignDetail({
                     className="w-full h-64 sm:h-80 object-cover rounded-lg"
                   />
                   <Badge className="absolute top-4 right-4 bg-white text-gray-800">
-                    {campaign.category}
+                    {campaign.category?.name}
                   </Badge>
                 </div>
 

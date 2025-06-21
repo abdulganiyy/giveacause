@@ -173,7 +173,7 @@ export default function CampaignsListingPage() {
               className="object-cover transition-transform hover:scale-105"
             />
             <Badge className="absolute top-2 right-2 bg-white text-gray-800">
-              {campaign.category}
+              {campaign.category?.name}
             </Badge>
           </div>
           <CardHeader className="pb-2">
