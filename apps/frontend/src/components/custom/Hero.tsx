@@ -35,21 +35,24 @@ export default function Hero() {
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button
-                  size="lg"
-                  className="bg-green-600 hover:bg-green-700 text-lg px-8 py-3"
-                >
-                  Start Fundraising
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-                <Button
+                <Link href="/signup">
+                  <Button
+                    size="lg"
+                    className="bg-green-600 hover:bg-green-700 text-lg px-8 py-3"
+                  >
+                    Start Fundraising
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+
+                {/* <Button
                   variant="outline"
                   size="lg"
                   className="text-lg px-8 py-3"
                 >
                   <Play className="mr-2 h-5 w-5" />
                   Watch How It Works
-                </Button>
+                </Button> */}
               </div>
               <div className="flex items-center space-x-8 pt-4">
                 <div className="text-center">

@@ -82,7 +82,7 @@ export class CampaignService {
 
 
   findOne(id: string) {
-    return this.prisma.campaign.findFirst({where:{id},include:{donations:true,creator:true}})
+    return this.prisma.campaign.findFirst({where:{id},include:{donations:true,creator:true,category:true}})
   }
 
   update(id: string, updateCampaignDto: UpdateCampaignDto) {

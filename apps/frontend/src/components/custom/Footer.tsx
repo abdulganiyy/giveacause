@@ -1,8 +1,12 @@
 import React from "react";
+import Link from "next/link";
+import { Heart } from "lucide-react";
+import { Button } from "../ui/button";
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-200 dark:bg-gray-900">
+    <>
+      {/* <footer className="bg-gray-200 dark:bg-gray-900">
       <div className="mx-auto w-full max-w-screen-xl p-4 py-6 lg:py-8">
         <div className="md:flex md:justify-between">
           <div className="mb-6 md:mb-0">
@@ -180,7 +184,126 @@ const Footer = () => {
           </div>
         </div>
       </div>
-    </footer>
+    </footer> */}
+      <footer className="bg-gray-900 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="col-span-1 md:col-span-2">
+              <div className="flex items-center mb-4">
+                <Heart className="h-8 w-8 text-green-400 mr-2" />
+                <span className="text-2xl font-bold">GiveACause</span>
+              </div>
+              <p className="text-gray-400 mb-6 max-w-md">
+                Connecting generous donors with meaningful causes. Together,
+                we're making the world a better place, one campaign at a time.
+              </p>
+              <div className="flex space-x-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-gray-600 text-gray-400 hover:text-white"
+                >
+                  Facebook
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-gray-600 text-gray-400 hover:text-white"
+                >
+                  Twitter
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-gray-600 text-gray-400 hover:text-white"
+                >
+                  Instagram
+                </Button>
+              </div>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Fundraise For</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li>
+                  <Link href="#" className="hover:text-white">
+                    Health
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white">
+                    Relief
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white">
+                    Education
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white">
+                    Memorial
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white">
+                    General
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Learn More</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li>
+                  <Link href="#" className="hover:text-white">
+                    How it works
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white">
+                    Success stories
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/about" className="hover:text-white">
+                    About us
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="hover:text-white">
+                    Contact
+                  </Link>
+                </li>
+                <li>
+                  <Link href="#" className="hover:text-white">
+                    Fees
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy-policy" className="hover:text-white">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/terms-and-conditions"
+                    className="hover:text-white"
+                  >
+                    Terms of Service
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
+            <p>
+              © 2025 GiveACause. All rights reserved. | Privacy Policy | Terms
+              of Service
+            </p>
+          </div>
+        </div>
+      </footer>
+    </>
   );
 };
 

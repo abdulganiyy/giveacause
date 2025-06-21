@@ -115,7 +115,9 @@ export default function CampaignDetail({
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center">
               <Heart className="h-8 w-8 text-green-600 mr-2" />
-              <span className="text-xl font-bold text-gray-900">FundHope</span>
+              <span className="text-xl font-bold text-gray-900">
+                GiveACause
+              </span>
             </Link>
             <div className="flex items-center space-x-4">
               <Link href="/campaigns">
