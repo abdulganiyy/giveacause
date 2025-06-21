@@ -163,13 +163,13 @@ export function FlyerGenerator({
                   <div>
                     <span className="text-sm font-medium">Goal:</span>
                     <p className="text-sm text-gray-600">
-                      ${campaignData.targetAmount.toLocaleString()}
+                      ₦{campaignData.targetAmount.toLocaleString()}
                     </p>
                   </div>
                   <div>
                     <span className="text-sm font-medium">Raised:</span>
                     <p className="text-sm text-gray-600">
-                      ${campaignData.currentAmount.toLocaleString()}
+                      ₦{campaignData.currentAmount.toLocaleString()}
                     </p>
                   </div>
                 </div>
