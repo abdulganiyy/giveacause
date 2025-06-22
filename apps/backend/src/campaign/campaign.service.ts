@@ -28,7 +28,7 @@ export class CampaignService {
     } = query;
 
     const where: any = {
-      // isActive:true
+      isActive:true
     };
 
     if (search) {

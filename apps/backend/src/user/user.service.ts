@@ -20,6 +20,7 @@ export class UserService {
     return this.prisma.user.findMany({
       include:{
         role:true,
+      
       }
     })
   }
@@ -85,6 +86,7 @@ export class UserService {
     campaignsCreated: user.campaigns.length,
     donationsMade: user.donations.length,
     paystackSubaccount: user.paystackSubAccountId || null,
+    profileComplete: user.status === "COMPLETED",
     status:user.status
   };
 }
@@ -103,6 +105,7 @@ async fetchAdminStats() {
         createdAt: true,
         donations:true,
         campaigns:true,
+        status:true
       },
     }),
     this.prisma.campaign.findMany({
@@ -119,6 +122,7 @@ async fetchAdminStats() {
         creator:true,
         category:true,
         deadline:true,
+        isActive:true
       },
 
     }),
@@ -141,7 +145,8 @@ async fetchAdminStats() {
     avatar: user.avatarUrl,
     createdAt: user.createdAt.toISOString().split('T')[0],
     campaignsCreated:user.campaigns.length,
-    totalRaised:user.campaigns.reduce((sum, c) => sum + c.currentAmount, 0)
+    totalRaised:user.campaigns.reduce((sum, c) => sum + c.currentAmount, 0),
+    status:user.status,
   }));
 
   const topCampaigns = [...campaignsData]
@@ -158,6 +163,8 @@ async fetchAdminStats() {
       creator:c.creator,
       category:c.category,
       deadline:c.deadline,
+      status:c.status,
+      isActive:c.isActive
       
     }));
 

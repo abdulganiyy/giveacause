@@ -21,6 +21,8 @@ export class CreateUserDto {
   @IsString()
   accountName?: string;
 
+ 
+
   @IsOptional()
   @IsString()
   accountNumber?: string;

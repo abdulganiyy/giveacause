@@ -41,13 +41,12 @@ export class PaystackService {
   async createSubAccount(account_number: string, settlement_bank: string,business_name:string) {
     const url = `${this.PAYSTACK_BASE_URL}/subaccount`;
     try {
-      const response = await axios.post(url, {
-        body: {
+      const response = await axios.post(url,{
           business_name: business_name,
           percentage_charge: 0,  
           account_number: account_number,
           settlement_bank: settlement_bank
-        },
+        }, {
         headers: {
           Authorization: `Bearer ${this.PAYSTACK_SECRET}`,
           'Content-Type': 'application/json',
@@ -61,7 +60,7 @@ export class PaystackService {
       }
 
       return {
-       subaccount_code:data.subaccount_code
+       subaccount_code:data.data.subaccount_code
       };
     } catch (error) {
       const message =

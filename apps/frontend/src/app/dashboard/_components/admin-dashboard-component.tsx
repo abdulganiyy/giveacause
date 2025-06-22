@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Shield,
   DollarSign,
@@ -9,9 +9,15 @@ import {
   TrendingUp,
   AlertTriangle,
   Eye,
-  Ban,
   XCircle,
   BarChart3,
+  MoreHorizontal,
+  Play,
+  Pause,
+  Trash2,
+  UserCheck,
+  UserX,
+  Ban,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -34,20 +40,98 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
-import { fetchAdminStats } from "@/lib/api";
+import {
+  fetchAdminStats,
+  updateCampaign,
+  deleteCampaign,
+  updateUser,
+  deleteUser,
+} from "@/lib/api";
 import { getDaysBetweenDates } from "@/lib/utils";
 
 export default function AdminDashboard() {
+  const queryClient = useQueryClient();
+
   const { data: adminStats, isLoading } = useQuery({
     queryKey: ["adminStats"],
     queryFn: fetchAdminStats,
   });
 
+  // Campaign mutations
+  const updateCampaignMutation = useMutation({
+    mutationFn: ({ campaignId, data }: { campaignId: string; data: any }) =>
+      updateCampaign(campaignId, data),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["adminStats"] });
+      // toast(`Campaign has been ${variables.status === "active" ? "activated" : "deactivated"}.`);
+      toast(`Campaign has been updated.`);
+    },
+    onError: () => {
+      toast.error("Failed to update campaign status.");
+    },
+  });
+
+  const deleteCampaignMutation = useMutation({
+    mutationFn: (campaignId: string) => deleteCampaign(campaignId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminStats"] });
+      toast("Campaign has been permanently deleted.");
+    },
+    onError: () => {
+      toast.error("Failed to delete campaign.");
+    },
+  });
+
+  // User mutations
+  const updateUserMutation = useMutation({
+    mutationFn: ({ userId, data }: { userId: string; data: any }) =>
+      updateUser(userId, data),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["adminStats"] });
+      // toast( `User has been ${variables.status === "active" ? "activated" : "deactivated"}.`,);
+      toast(`User has been updated`);
+    },
+    onError: () => {
+      toast.error("Failed to update user.");
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: (userId: string) => deleteUser(userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminStats"] });
+      toast("User account has been permanently deleted.");
+    },
+    onError: () => {
+      toast.error("Failed to delete user.");
+    },
+  });
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: "NGN",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -75,7 +159,7 @@ export default function AdminDashboard() {
             <div className="flex items-center">
               <Shield className="h-8 w-8 text-green-600 mr-2" />
               <span className="text-xl font-bold text-gray-900">
-                FundHope Admin
+                GiveACause Admin
               </span>
             </div>
             <div className="flex items-center space-x-4">
@@ -304,14 +388,16 @@ export default function AdminDashboard() {
                           <TableCell>
                             <Badge
                               variant={
-                                getDaysBetweenDates(campaign.deadline) > 0
-                                  ? "default"
-                                  : "secondary"
+                                campaign.isActive ? "default" : "secondary"
+                                // getDaysBetweenDates(campaign.deadline) > 0
+                                //   ? "default"
+                                //   : "secondary"
                               }
                             >
-                              {getDaysBetweenDates(campaign.deadline) > 0
+                              {/* {getDaysBetweenDates(campaign.deadline) > 0
                                 ? "Active"
-                                : "Ended"}
+                                : "Ended"} */}
+                              {campaign.status}
                             </Badge>
                           </TableCell>
                           <TableCell>
@@ -319,9 +405,99 @@ export default function AdminDashboard() {
                               <Button variant="outline" size="sm">
                                 <Eye className="h-4 w-4" />
                               </Button>
-                              <Button variant="outline" size="sm">
+                              {/* <Button variant="outline" size="sm">
                                 <Ban className="h-4 w-4" />
-                              </Button>
+                              </Button> */}
+
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="outline" size="sm">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>
+                                    Campaign Actions
+                                  </DropdownMenuLabel>
+                                  <DropdownMenuSeparator />
+
+                                  {campaign.isActive ? (
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        updateCampaignMutation.mutate({
+                                          campaignId: campaign.id,
+                                          data: {
+                                            isActive: false,
+                                            status: "PENDING",
+                                          },
+                                        });
+                                      }}
+                                      className="text-orange-600"
+                                    >
+                                      <Pause className="mr-2 h-4 w-4" />
+                                      Deactivate Campaign
+                                    </DropdownMenuItem>
+                                  ) : (
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        updateCampaignMutation.mutate({
+                                          campaignId: campaign.id,
+                                          data: {
+                                            isActive: true,
+                                            status: "ACCEPTED",
+                                          },
+                                        });
+                                      }}
+                                      className="text-green-600"
+                                    >
+                                      <Play className="mr-2 h-4 w-4" />
+                                      Activate Campaign
+                                    </DropdownMenuItem>
+                                  )}
+
+                                  <DropdownMenuSeparator />
+
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <DropdownMenuItem
+                                        onSelect={(e) => e.preventDefault()}
+                                        className="text-red-600"
+                                      >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Delete Campaign
+                                      </DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>
+                                          Delete Campaign
+                                        </AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          Are you sure you want to delete "
+                                          {campaign.title}"? This action cannot
+                                          be undone and will permanently remove
+                                          the campaign and all associated data.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>
+                                          Cancel
+                                        </AlertDialogCancel>
+                                        <AlertDialogAction
+                                          onClick={() => {
+                                            // deleteCampaignMutation.mutate(
+                                            //   campaign.id
+                                            // );
+                                          }}
+                                          className="bg-red-600 hover:bg-red-700"
+                                        >
+                                          Delete Campaign
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -396,16 +572,100 @@ export default function AdminDashboard() {
                           })}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="default">Active</Badge>
+                          <Badge variant="default">{user?.status}</Badge>
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
                             <Button variant="outline" size="sm">
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button variant="outline" size="sm">
+                            {/* <Button variant="outline" size="sm">
                               <Ban className="h-4 w-4" />
-                            </Button>
+                            </Button> */}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>
+                                  User Actions
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+
+                                {user.status === "COMPLETED" ? (
+                                  <DropdownMenuItem
+                                    // onClick={() => handleUserStatusChange(user.id, "inactive")}
+                                    onClick={() => {
+                                      updateUserMutation.mutate({
+                                        userId: user.id,
+                                        data: { status: "PENDING" },
+                                      });
+                                    }}
+                                    className="text-orange-600"
+                                  >
+                                    <UserX className="mr-2 h-4 w-4" />
+                                    Deactivate User
+                                  </DropdownMenuItem>
+                                ) : (
+                                  <DropdownMenuItem
+                                    // onClick={() => handleUserStatusChange(user.id, "active")}
+                                    onClick={() => {
+                                      updateUserMutation.mutate({
+                                        userId: user.id,
+                                        data: { status: "COMPLETED" },
+                                      });
+                                    }}
+                                    className="text-green-600"
+                                  >
+                                    <UserCheck className="mr-2 h-4 w-4" />
+                                    Activate User
+                                  </DropdownMenuItem>
+                                )}
+
+                                <DropdownMenuSeparator />
+
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <DropdownMenuItem
+                                      onSelect={(e) => e.preventDefault()}
+                                      className="text-red-600"
+                                    >
+                                      <Trash2 className="mr-2 h-4 w-4" />
+                                      Delete User
+                                    </DropdownMenuItem>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>
+                                        Delete User Account
+                                      </AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Are you sure you want to delete{" "}
+                                        {user.firstname}'s account? This action
+                                        cannot be undone and will permanently
+                                        remove the user and all associated data
+                                        including campaigns and donations.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>
+                                        Cancel
+                                      </AlertDialogCancel>
+                                      <AlertDialogAction
+                                        onClick={() => {
+                                          // deleteUserMutation.mutate(user.id)
+                                        }}
+                                        className="bg-red-600 hover:bg-red-700"
+                                      >
+                                        Delete User
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         </TableCell>
                       </TableRow>

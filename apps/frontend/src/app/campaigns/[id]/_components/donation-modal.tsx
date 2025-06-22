@@ -85,14 +85,16 @@ export default function DonationModal({
     : Math.round(((finalDonationAmount * tipPercentage) / 100) * 100) / 100;
   const totalAmount = finalDonationAmount + platformTip;
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+  // const formatCurrency = (amount: number) => {
+  //   return new Intl.NumberFormat("en-US", {
+  //     style: "currency",
+  //     currency: "NGN",
+  //     minimumFractionDigits: 0,
+  //     maximumFractionDigits: 0,
+  //   }).format(amount);
+  // };
+
+  // console.log(paystackSubAccountId);
 
   // Mutation for submitting donation
   const { mutate, isPending } = useMutation({
@@ -118,7 +120,7 @@ export default function DonationModal({
     amount: totalAmount * 100, // Paystack amount is in kobo (100 kobo = 1 Naira)
     publicKey:
       process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_yourtestkeyhere",
-    subaccount: paystackSubAccountId || "ACCT_3sxy5l17xft2umo",
+    subaccount: paystackSubAccountId,
     transaction_charge: platformTip * 100,
     bearer: "subaccount",
   };

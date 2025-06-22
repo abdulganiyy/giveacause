@@ -76,12 +76,12 @@ export default function UserDashboard() {
 
   // Check if profile completion modal should be shown
   useEffect(() => {
-    if (user && !user.profileComplete) {
+    if (user && user.profileComplete != "COMPLETED") {
       // Check if user has dismissed the reminder
       const dismissed =
         localStorage.getItem("hideProfileCompletion") === "true";
 
-      if (!dismissed && !user.profileCompletionReminderDismissed) {
+      if (!dismissed) {
         // Show modal after a short delay to let the dashboard load
         const timer = setTimeout(() => {
           setIsProfileModalOpen(true);
@@ -89,6 +89,15 @@ export default function UserDashboard() {
 
         return () => clearTimeout(timer);
       }
+
+      // if (!dismissed && !user.profileCompletionReminderDismissed) {
+      //   // Show modal after a short delay to let the dashboard load
+      //   const timer = setTimeout(() => {
+      //     setIsProfileModalOpen(true);
+      //   }, 1500);
+
+      //   return () => clearTimeout(timer);
+      // }
     }
   }, [user]);
 
