@@ -365,15 +365,26 @@ export default function CampaignDetail({
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <Button
+                    {/* <Button
                       className="w-full bg-green-600 hover:bg-green-700"
                       size="lg"
                       onClick={() => setIsDonationModalOpen(true)}
                     >
-                      {/* <DollarSign className="h-4 w-4 mr-2" /> */}
+                      <DollarSign className="h-4 w-4 mr-2" />
                       <span className="inline-block text-lg mr-2">₦</span>
                       Donate Now
-                    </Button>
+                    </Button> */}
+                    <DonationModal
+                      isOpen={isDonationModalOpen}
+                      onClose={() => setIsDonationModalOpen(false)}
+                      onOpen={() => setIsDonationModalOpen(true)}
+                      campaignCreatorName={campaign.creator.name}
+                      campaignId={campaign.id}
+                      campaignTitle={campaign.title}
+                      paystackSubAccountId={
+                        campaign.creator.paystackSubAccountId
+                      }
+                    />
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="w-full" size="lg">
@@ -533,7 +544,7 @@ export default function CampaignDetail({
         )}
       </div>
       {/* Donation Modal */}
-      {campaign && (
+      {/* {campaign && (
         <DonationModal
           isOpen={isDonationModalOpen}
           onClose={() => setIsDonationModalOpen(false)}
@@ -542,7 +553,7 @@ export default function CampaignDetail({
           campaignTitle={campaign.title}
           paystackSubAccountId={campaign.creator.paystackSubAccountId}
         />
-      )}
+      )} */}
       {/* Flyer Generator Modal */}
       {flyerData && (
         <FlyerGenerator

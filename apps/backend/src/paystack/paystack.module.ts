@@ -5,5 +5,6 @@ import { PaystackController } from './paystack.controller';
 @Module({
   controllers: [PaystackController],
   providers: [PaystackService],
+  exports:[PaystackService]
 })
 export class PaystackModule {}

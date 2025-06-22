@@ -37,4 +37,36 @@ export class PaystackService {
       throw new HttpException(message, HttpStatus.BAD_REQUEST)
     }
   }
+
+  async createSubAccount(account_number: string, settlement_bank: string,business_name:string) {
+    const url = `${this.PAYSTACK_BASE_URL}/subaccount`;
+    try {
+      const response = await axios.post(url, {
+        body: {
+          business_name: business_name,
+          percentage_charge: 0,  
+          account_number: account_number,
+          settlement_bank: settlement_bank
+        },
+        headers: {
+          Authorization: `Bearer ${this.PAYSTACK_SECRET}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = response.data;
+
+      if (!data.status) {
+        throw new HttpException(data.message, HttpStatus.BAD_REQUEST);
+      }
+
+      return {
+       subaccount_code:data.subaccount_code
+      };
+    } catch (error) {
+      const message =
+        error.response?.data?.message || 'Sub account creation failed';
+      throw new HttpException(message, HttpStatus.BAD_REQUEST);
+    }
+  }
 }

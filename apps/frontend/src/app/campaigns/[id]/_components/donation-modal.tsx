@@ -21,6 +21,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +43,7 @@ const TIP_PERCENTAGES = [0, 10, 15, 20];
 interface DonationModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpen: () => void;
   campaignId: string;
   campaignTitle: string;
   paystackSubAccountId: string;
@@ -51,6 +53,7 @@ interface DonationModalProps {
 export default function DonationModal({
   isOpen,
   onClose,
+  onOpen,
   campaignId,
   campaignTitle,
   paystackSubAccountId,
@@ -99,10 +102,12 @@ export default function DonationModal({
       queryClient.invalidateQueries({ queryKey: ["donations", campaignId] });
       queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
       setSuccess(true);
+      onOpen();
     },
     onError: (error) => {
       setError("Failed to process donation. Please try again.");
       console.error("Donation error:", error);
+      onOpen();
     },
   });
 
@@ -136,6 +141,7 @@ export default function DonationModal({
     // toast(`${finalDonationAmount}, ${platformTip}, ${totalAmount}`);
 
     setError("");
+    onClose();
 
     initializePayment({
       onSuccess: () => {
@@ -151,13 +157,14 @@ export default function DonationModal({
       },
       onClose: () => {
         setError("Payment was cancelled.");
+        onOpen();
       },
     });
   };
 
   const handleClose = () => {
     if (!isProcessing) {
-      setDonationAmount(50);
+      setDonationAmount(500);
       setCustomAmount("");
       setTipPercentage(15);
       setCustomTip("");
@@ -174,13 +181,34 @@ export default function DonationModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={() => {}}>
+      <DialogTrigger asChild>
+        <Button
+          className="w-full bg-green-600 hover:bg-green-700"
+          size="lg"
+          onClick={() => onOpen()}
+        >
+          <span className="inline-block text-lg mr-2">₦</span>
+          Donate Now
+        </Button>
+      </DialogTrigger>
+      <DialogContent
+        onInteractOutside={(e) => e.preventDefault()}
+        // onEscapeKeyDown={(e) => e.preventDefault()}
+        className="max-w-2xl max-h-[90vh] overflow-y-auto"
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Heart className="h-5 w-5 text-red-500" />
             <span>Support {campaignTitle}</span>
           </DialogTitle>
+          <Button
+            variant="ghost"
+            className="absolute right-1 top-1 z-50 bg-white"
+            onClick={() => handleClose()}
+          >
+            <X className="h-4 w-4" />
+          </Button>
           <DialogDescription>
             Your donation will help {campaignCreatorName} reach their goal
           </DialogDescription>
@@ -358,7 +386,7 @@ export default function DonationModal({
                     </span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span>FundHope tip</span>
+                    <span>GiveACause tip</span>
                     <span>
                       {/* ₦{platformTip.toFixed(2)} */}
                       {platformTip.toLocaleString("en-NG", {

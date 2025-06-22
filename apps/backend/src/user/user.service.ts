@@ -6,6 +6,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 // import { SignUp } from './dto/sign-up';
 import { hash } from 'bcrypt';
 import { EmailService } from 'src/email/email.service';
+import { PaystackService } from 'src/paystack/paystack.service';
 
 type User = any;
 
@@ -13,7 +14,7 @@ type User = any;
 @Injectable()
 export class UserService {
 
-  constructor(private prisma: PrismaService,private emailService:EmailService) {}
+  constructor(private prisma: PrismaService,private emailService:EmailService,private paystackService:PaystackService) {}
 
   async findAll(): Promise<User[] | undefined> {
     return this.prisma.user.findMany({
@@ -172,7 +173,13 @@ async fetchAdminStats() {
   };
 }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
+  async update(id: string, updateUserDto: UpdateUserDto) {
+
+    if(updateUserDto.accountNumber){
+     const data = await this.paystackService.createSubAccount(updateUserDto.accountNumber,updateUserDto.bankName as string,updateUserDto.accountName as string);
+     updateUserDto.paystackSubAccountId = data.subaccount_code;
+    }
+
     return this.prisma.user.update({where:{id},data:updateUserDto})
   }
 
