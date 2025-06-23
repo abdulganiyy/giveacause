@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -69,8 +70,14 @@ import {
   deleteUser,
 } from "@/lib/api";
 import { getDaysBetweenDates } from "@/lib/utils";
+import UserDetailsModal from "./user-details-modal";
+import CampaignDetailsModal from "./campaign-details-modal";
 
 export default function AdminDashboard() {
+  const [selectedCampaign, setSelectedCampaign] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: adminStats, isLoading } = useQuery({
@@ -137,6 +144,17 @@ export default function AdminDashboard() {
     }).format(amount);
   };
 
+  // console.log(adminStats);
+  const handleViewCampaign = (campaign: any) => {
+    setSelectedCampaign(campaign);
+    setIsCampaignModalOpen(true);
+  };
+
+  const handleViewUser = (user: any) => {
+    setSelectedUser(user);
+    setIsUserModalOpen(true);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -147,8 +165,6 @@ export default function AdminDashboard() {
       </div>
     );
   }
-
-  console.log(adminStats);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -402,7 +418,11 @@ export default function AdminDashboard() {
                           </TableCell>
                           <TableCell>
                             <div className="flex space-x-2">
-                              <Button variant="outline" size="sm">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewCampaign(campaign)}
+                              >
                                 <Eye className="h-4 w-4" />
                               </Button>
                               {/* <Button variant="outline" size="sm">
@@ -576,7 +596,11 @@ export default function AdminDashboard() {
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
-                            <Button variant="outline" size="sm">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleViewUser(user)}
+                            >
                               <Eye className="h-4 w-4" />
                             </Button>
                             {/* <Button variant="outline" size="sm">
@@ -739,133 +763,24 @@ export default function AdminDashboard() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <CampaignDetailsModal
+        campaign={selectedCampaign}
+        isOpen={isCampaignModalOpen}
+        onClose={() => {
+          setIsCampaignModalOpen(false);
+          setSelectedCampaign(null);
+        }}
+      />
+
+      <UserDetailsModal
+        user={selectedUser}
+        isOpen={isUserModalOpen}
+        onClose={() => {
+          setIsUserModalOpen(false);
+          setSelectedUser(null);
+        }}
+      />
     </div>
   );
 }
-
-// "use client";
-// import React from "react";
-// import { TrendingDownIcon, TrendingUpIcon } from "lucide-react";
-// import { Badge } from "@/components/ui/badge";
-// import {
-//   Card,
-//   CardDescription,
-//   CardFooter,
-//   CardHeader,
-//   CardTitle,
-// } from "@/components/ui/card";
-
-// const AdminDashboard = () => {
-//   return (
-//     <div>
-//       <div className="md:grid-cols-4 grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card lg:px-6">
-//         <Card className="@container/card">
-//           <CardHeader className="relative">
-//             <CardDescription>Total Users</CardDescription>
-//             <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
-//               11,250
-//             </CardTitle>
-//             {/* <div className="absolute right-4 top-4">
-//             <Badge variant="outline" className="flex gap-1 rounded-lg text-xs">
-//               <TrendingUpIcon className="size-3" />
-//               +12.5%
-//             </Badge>
-//           </div> */}
-//           </CardHeader>
-//           {/* <CardFooter className="flex-col items-start gap-1 text-sm">
-//           <div className="line-clamp-1 flex gap-2 font-medium">
-//             Trending up this month <TrendingUpIcon className="size-4" />
-//           </div>
-//           <div className="text-muted-foreground">
-//             Visitors for the last 6 months
-//           </div>
-//         </CardFooter> */}
-//         </Card>
-//         <Card className="@container/card">
-//           <CardHeader className="relative">
-//             <CardDescription>Total Raised</CardDescription>
-//             <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
-//               $11,250.00
-//             </CardTitle>
-//             {/* <div className="absolute right-4 top-4">
-//             <Badge variant="outline" className="flex gap-1 rounded-lg text-xs">
-//               <TrendingDownIcon className="size-3" />
-//               -20%
-//             </Badge>
-//           </div> */}
-//           </CardHeader>
-//           {/* <CardFooter className="flex-col items-start gap-1 text-sm">
-//           <div className="line-clamp-1 flex gap-2 font-medium">
-//             Down 20% this period <TrendingDownIcon className="size-4" />
-//           </div>
-//           <div className="text-muted-foreground">
-//             Acquisition needs attention
-//           </div>
-//         </CardFooter> */}
-//         </Card>
-//         <Card className="@container/card">
-//           <CardHeader className="relative">
-//             <CardDescription>Active Campaigns</CardDescription>
-//             <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
-//               45,678
-//             </CardTitle>
-//             {/* <div className="absolute right-4 top-4">
-//             <Badge variant="outline" className="flex gap-1 rounded-lg text-xs">
-//               <TrendingUpIcon className="size-3" />
-//               +12.5%
-//             </Badge>
-//           </div> */}
-//           </CardHeader>
-//           {/* <CardFooter className="flex-col items-start gap-1 text-sm">
-//           <div className="line-clamp-1 flex gap-2 font-medium">
-//             Strong user retention <TrendingUpIcon className="size-4" />
-//           </div>
-//           <div className="text-muted-foreground">Engagement exceed targets</div>
-//         </CardFooter> */}
-//         </Card>
-//         <Card className="@container/card">
-//           <CardHeader className="relative">
-//             <CardDescription>Pending Payouts</CardDescription>
-//             <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
-//               23,456
-//             </CardTitle>
-//             {/* <div className="absolute right-4 top-4">
-//             <Badge variant="outline" className="flex gap-1 rounded-lg text-xs">
-//               <TrendingUpIcon className="size-3" />
-//               +4.5%
-//             </Badge>
-//           </div> */}
-//           </CardHeader>
-//           {/* <CardFooter className="flex-col items-start gap-1 text-sm">
-//           <div className="line-clamp-1 flex gap-2 font-medium">
-//             Steady performance <TrendingUpIcon className="size-4" />
-//           </div>
-//           <div className="text-muted-foreground">Meets growth projections</div>
-//         </CardFooter> */}
-//         </Card>
-//         <Card className="@container/card">
-//           <CardHeader className="relative">
-//             <CardDescription>Flagged Campaigns</CardDescription>
-//             <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
-//               65,678
-//             </CardTitle>
-//             {/* <div className="absolute right-4 top-4">
-//             <Badge variant="outline" className="flex gap-1 rounded-lg text-xs">
-//               <TrendingUpIcon className="size-3" />
-//               +12.5%
-//             </Badge>
-//           </div> */}
-//           </CardHeader>
-//           {/* <CardFooter className="flex-col items-start gap-1 text-sm">
-//           <div className="line-clamp-1 flex gap-2 font-medium">
-//             Strong user retention <TrendingUpIcon className="size-4" />
-//           </div>
-//           <div className="text-muted-foreground">Engagement exceed targets</div>
-//         </CardFooter> */}
-//         </Card>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default AdminDashboard;

@@ -177,7 +177,7 @@ async fetchAdminStats() {
     flaggedCampaigns: flaggedCampaigns.length,
     recentUsers,
     topCampaigns,
-  };
+  }
 }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
