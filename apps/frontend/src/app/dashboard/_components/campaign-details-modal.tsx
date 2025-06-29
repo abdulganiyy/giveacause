@@ -68,12 +68,14 @@ export default function CampaignDetailsModal({
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>Campaign Details</span>
-            <Button variant="outline" size="sm" asChild>
-              <Link href={`/campaign/${campaign.id}`} target="_blank">
-                <ExternalLink className="h-4 w-4 mr-2" />
-                View Live
-              </Link>
-            </Button>
+            {campaign.status == "ACCEPTED" && (
+              <Button variant="outline" size="sm" asChild>
+                <Link href={`/campaigns/${campaign.id}`} target="_blank">
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  View Live
+                </Link>
+              </Button>
+            )}
           </DialogTitle>
         </DialogHeader>
 

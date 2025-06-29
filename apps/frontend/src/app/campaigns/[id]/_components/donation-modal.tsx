@@ -48,6 +48,7 @@ interface DonationModalProps {
   campaignTitle: string;
   paystackSubAccountId: string;
   campaignCreatorName: string;
+  campaignStatus: string;
 }
 
 export default function DonationModal({
@@ -58,6 +59,7 @@ export default function DonationModal({
   campaignTitle,
   paystackSubAccountId,
   campaignCreatorName,
+  campaignStatus,
 }: DonationModalProps) {
   const [donationAmount, setDonationAmount] = useState<number>(500);
   const [customAmount, setCustomAmount] = useState<string>("");
@@ -128,6 +130,7 @@ export default function DonationModal({
   const initializePayment = usePaystackPayment(config as any);
 
   const handlePayment = () => {
+    if (campaignStatus != "ACCEPTED") return;
     if ((!donorName && !anonymous) || !donorEmail || finalDonationAmount <= 0) {
       setError(
         "Please fill in all required fields and enter a valid donation amount"

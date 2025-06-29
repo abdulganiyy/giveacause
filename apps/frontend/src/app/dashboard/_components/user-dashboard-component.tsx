@@ -76,7 +76,7 @@ export default function UserDashboard() {
 
   // Check if profile completion modal should be shown
   useEffect(() => {
-    if (user && user.profileComplete != "COMPLETED") {
+    if (user && user.status != "COMPLETED") {
       // Check if user has dismissed the reminder
       const dismissed =
         localStorage.getItem("hideProfileCompletion") === "true";

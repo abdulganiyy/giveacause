@@ -18,12 +18,13 @@ const sortBy:any = {
 
 }
 
-export async function fetchCampaigns(query = "", category = "All Categories", page = 1, sort = "Most Recent") {
+export async function fetchCampaigns(query:string | undefined = "", category:string | undefined  = "All Categories", page:number | undefined  = 1, sort:string | undefined  = "Most Recent",isActive:boolean | undefined = true) {
   const params = new URLSearchParams({
     search:query,
     category:category == "All Categories"?"":category,
     page: page.toString(),
     sort:sortBy[sort],
+    isActive:isActive?"true":"false"
   })
 
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/campaign?${params.toString()}`)
@@ -87,6 +88,26 @@ export async function fetchDonationsByCampaignId(campaignId: any) {
   return response.json()
 }
 
+export async function fetchAllDonations() {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/donations`)
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch donations")
+  }
+
+  return response.json()
+}
+
+export async function fetchAllUsers() {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`)
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch donations")
+  }
+
+  return response.json()
+}
+
 export async function fetchCategories() {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/category`)
 
@@ -133,14 +154,10 @@ export async function fetchAdminStats() {
 }
 
 // // API functions for user management
-// export async function fetchUserById(id: number) {
-//   await delay(500)
-//   const user = usersData.find((u) => u.id === id)
-//   if (!user) {
-//     throw new Error(`User with id ${id} not found`)
-//   }
-//   return user
-// }
+export async function fetchUserById(id: string) {
+   const response = await apiService.get(`/user/${id}`);
+  return response;
+}
 
 export const fetchUserStats = async () => {
   const response = await apiService.get("/user/stats");

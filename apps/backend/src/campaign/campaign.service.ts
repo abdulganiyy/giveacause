@@ -18,6 +18,7 @@ export class CampaignService {
     console.log(query)
       const {
       search,
+      isActive,
       category,
       featured,
       trending,
@@ -28,8 +29,11 @@ export class CampaignService {
     } = query;
 
     const where: any = {
-      isActive:true
     };
+
+    if(isActive == "true"){
+      where.isActive = true
+    }
 
     if (search) {
       where.OR = [
@@ -62,11 +66,15 @@ export class CampaignService {
           select: {
             donations: true,
           },
+         
         },
+         creator:true,
+         category:true,
+         donations:true
       },
       }),
       this.prisma.campaign.count({ where }),
-    ]);
+    ])
 
     return {
       data,

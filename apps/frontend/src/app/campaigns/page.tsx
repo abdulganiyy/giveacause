@@ -48,17 +48,6 @@ import NavBar from "@/components/custom/NavBar";
 import Footer from "@/components/custom/Footer";
 import { getDaysBetweenDates } from "@/lib/utils";
 
-const categories = [
-  "All Categories",
-  "Emergency",
-  "Medical",
-  "Community",
-  "Animals",
-  "Education",
-  "Environment",
-  "Housing",
-];
-
 export default function CampaignsListingPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState({

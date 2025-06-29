@@ -5,9 +5,11 @@ import { Heart } from "lucide-react";
 import { Button } from "../ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { useUser } from "@/hooks/useUser";
 
 const NavBar = () => {
   const [isMobileMode, setIsMobileMode] = useState(false);
+  const { data: user } = useUser();
   const isMobile = useIsMobile();
   return (
     <>
@@ -123,16 +125,29 @@ const NavBar = () => {
               </Link>
             </nav>
             <div className="flex items-center space-x-4">
-              <Link href="/signin">
-                <Button variant="outline" size="sm">
-                  Sign In
-                </Button>
-              </Link>
-              <Link href="/signup">
-                <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                  Start a Campaign
-                </Button>
-              </Link>
+              {user ? (
+                <Link href="/dashboard">
+                  <Button variant="outline" size="sm">
+                    Go to Dashboard
+                  </Button>
+                </Link>
+              ) : (
+                <>
+                  <Link href="/signin">
+                    <Button variant="outline" size="sm">
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/signup">
+                    <Button
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      Start a Campaign
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -384,6 +384,7 @@ export default function CampaignDetail({
                       paystackSubAccountId={
                         campaign.creator.paystackSubAccountId
                       }
+                      campaignStatus={campaign.status}
                     />
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

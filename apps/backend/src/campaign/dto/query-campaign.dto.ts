@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsBooleanString, IsNumberString, IsIn } from 'class-validator';
+import { IsOptional, IsString, IsBooleanString, IsNumberString, IsIn, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class QueryCampaignDto {
@@ -9,6 +9,10 @@ export class QueryCampaignDto {
   @IsOptional()
   @IsString()
   category?: string;
+
+  @IsOptional()
+  @IsString()
+  isActive?: string;
 
   @IsOptional()
   @IsBooleanString()
