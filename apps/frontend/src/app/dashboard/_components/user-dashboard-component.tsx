@@ -146,7 +146,7 @@ export default function UserDashboard() {
               <Link href="/" className="flex items-center">
                 <Heart className="h-8 w-8 text-green-600 mr-2" />
                 <span className="text-xl font-bold text-gray-900">
-                  FundHope
+                  GiveACause
                 </span>
               </Link>
             </div>

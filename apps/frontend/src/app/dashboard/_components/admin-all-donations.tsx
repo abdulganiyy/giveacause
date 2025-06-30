@@ -54,12 +54,14 @@ export default function AdminAllDonations() {
     queryFn: fetchAllDonations,
   });
 
-  const donations = donationsData?.data || [];
+  const donations = donationsData || [];
+
+  console.log(donations);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: "NGN",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -69,9 +71,9 @@ export default function AdminAllDonations() {
   const filteredDonations = donations
     .filter((donation: any) => {
       const matchesSearch =
-        donation.donorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        donation.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         donation.campaignTitle
-          .toLowerCase()
+          ?.toLowerCase()
           .includes(searchQuery.toLowerCase());
       const matchesCampaign =
         campaignFilter === "all" ||
@@ -129,10 +131,10 @@ export default function AdminAllDonations() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
-              <Link href="/admin" className="flex items-center">
+              <Link href="/dashboard" className="flex items-center">
                 <Shield className="h-8 w-8 text-green-600 mr-2" />
                 <span className="text-xl font-bold text-gray-900">
-                  FundHope Admin
+                  GiveACause Admin
                 </span>
               </Link>
               <span className="text-gray-400">/</span>
@@ -324,7 +326,7 @@ export default function AdminAllDonations() {
                           <AvatarFallback>
                             {donation.anonymous
                               ? "A"
-                              : donation.donorName
+                              : donation.name
                                   .split(" ")
                                   .map((n: any) => n[0])
                                   .join("")}
@@ -332,12 +334,10 @@ export default function AdminAllDonations() {
                         </Avatar>
                         <div>
                           <p className="font-medium">
-                            {donation.anonymous
-                              ? "Anonymous"
-                              : donation.donorName}
+                            {donation.anonymous ? "Anonymous" : donation.name}
                           </p>
                           <p className="text-sm text-gray-500">
-                            {donation.donorEmail}
+                            {donation.email}
                           </p>
                         </div>
                       </div>

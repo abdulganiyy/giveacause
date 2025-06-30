@@ -121,7 +121,7 @@ export default function UserAllDonations() {
               <Link href="/dashboard" className="flex items-center">
                 <Heart className="h-8 w-8 text-green-600 mr-2" />
                 <span className="text-xl font-bold text-gray-900">
-                  FundHope
+                  GiveACause
                 </span>
               </Link>
               <span className="text-gray-400">/</span>
@@ -174,7 +174,12 @@ export default function UserAllDonations() {
                     Total Donated
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {formatCurrency(totalDonated)}
+                    {totalDonated.toLocaleString("en-NG", {
+                      style: "currency",
+                      currency: "NGN",
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    })}
                   </p>
                 </div>
               </div>
@@ -222,7 +227,12 @@ export default function UserAllDonations() {
                     Average Donation
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {formatCurrency(averageDonation)}
+                    {averageDonation.toLocaleString("en-NG", {
+                      style: "currency",
+                      currency: "NGN",
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    })}
                   </p>
                 </div>
               </div>

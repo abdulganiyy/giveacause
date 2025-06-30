@@ -23,6 +23,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getDaysBetweenDates } from "@/lib/utils";
 
 // import type { Campaign } from "@/lib/api"
 
@@ -106,9 +107,9 @@ export default function CampaignDetailsModal({
                   }
                   className="mb-4"
                 >
-                  {campaign.status === "active"
+                  {campaign.status === "ACCEPTED"
                     ? "Active"
-                    : campaign.status === "inactive"
+                    : campaign.status === "PENDING"
                       ? "Inactive"
                       : "Ended"}
                 </Badge>
@@ -210,7 +211,9 @@ export default function CampaignDetailsModal({
                 </Avatar>
                 <div>
                   <h3 className="text-lg font-semibold">
-                    {campaign.creator.name}
+                    {campaign.creator.firstname +
+                      " " +
+                      campaign.creator.lastname}
                   </h3>
                   <p className="text-gray-600">
                     {campaign.creator.relationship}
@@ -265,7 +268,7 @@ export default function CampaignDetailsModal({
                       ? formatCurrency(
                           campaign.raisedAmount / campaign.donorCount
                         )
-                      : "$0"}
+                      : "₦0"}
                   </p>
                   <p className="text-sm text-gray-600">Avg. Donation</p>
                 </div>
@@ -277,7 +280,7 @@ export default function CampaignDetailsModal({
                 </div>
                 <div className="text-center p-4 bg-gray-50 rounded-lg">
                   <p className="text-lg font-bold text-gray-900">
-                    {campaign.daysLeft}
+                    {getDaysBetweenDates(campaign.deadline)}
                   </p>
                   <p className="text-sm text-gray-600">Days Remaining</p>
                 </div>

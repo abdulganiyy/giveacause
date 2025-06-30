@@ -16,13 +16,37 @@ export class UserService {
 
   constructor(private prisma: PrismaService,private emailService:EmailService,private paystackService:PaystackService) {}
 
-  async findAll(): Promise<User[] | undefined> {
-    return this.prisma.user.findMany({
-      include:{
-        role:true,
-      
-      }
+  async findAll() {
+
+      const usersData = await  this.prisma.user.findMany({
+      include:{role:true,campaigns:true,donations:true},      
+      orderBy: { createdAt: 'asc' },
     })
+
+
+  const users = usersData.map(user => ({
+    id: user.id,
+    firstname: user.firstname,
+    lastname: user.lastname,
+    email: user.email,
+    avatar: user.avatarUrl,
+    createdAt: user.createdAt.toISOString().split('T')[0],
+    campaignsCreated:user.campaigns.length,
+    totalRaised:user.campaigns.reduce((sum, c) => sum + c.currentAmount, 0),
+    totalDonated:user.donations.reduce((sum, c) => sum + c.amount, 0),
+    donationsMade:user.donations.length,
+    status:user.status,
+    paystackSubAccountId:user.paystackSubAccountId,
+    role:user.role.name
+  }))
+
+  return users
+    // return this.prisma.user.findMany({
+    //   include:{
+    //     role:true,
+      
+    //   }
+    // })
   }
 
 
@@ -93,20 +117,10 @@ export class UserService {
 
 async fetchAdminStats() {
   // Fetch all users and campaigns
-  const [usersData, campaignsData, pendingCampaignsCount] = await this.prisma.$transaction([
+  const [usersData, campaignsData,categoriesData,donationsData, pendingCampaignsCount] = await this.prisma.$transaction([
     this.prisma.user.findMany({
+      include:{role:true,campaigns:true,donations:true},      
       orderBy: { createdAt: 'asc' },
-      select: {
-        id: true,
-        firstname: true,
-        lastname: true,
-        email: true,
-        avatarUrl: true,
-        createdAt: true,
-        donations:true,
-        campaigns:true,
-        status:true
-      },
     }),
     this.prisma.campaign.findMany({
       select: {
@@ -122,10 +136,16 @@ async fetchAdminStats() {
         creator:true,
         category:true,
         deadline:true,
-        isActive:true
+        isActive:true,
+        description:true,
+        donations:true
       },
 
     }),
+     this.prisma.category.findMany({
+    include:{campaigns:true}
+    }),
+    this.prisma.donation.findMany(),
     this.prisma.campaign.count({
       where: { status: 'PENDING' }
     }),
@@ -133,7 +153,8 @@ async fetchAdminStats() {
 
   // Compute platform-wide totals
   const totalRaised = campaignsData.reduce((sum, c) => sum + c.currentAmount, 0);
-  const platformRevenue = totalRaised * 0.03;
+  const platformRevenue = donationsData.reduce((sum, d) => sum + (d as {tip:number}).tip, 0);
+
 
   // Optional logic to define flagged campaigns (example: currentAmount = 0 + not active)
   const flaggedCampaigns = campaignsData.filter(c => c.status == 'REJECTED');
@@ -146,8 +167,12 @@ async fetchAdminStats() {
     createdAt: user.createdAt.toISOString().split('T')[0],
     campaignsCreated:user.campaigns.length,
     totalRaised:user.campaigns.reduce((sum, c) => sum + c.currentAmount, 0),
+    totalDonated:user.donations.reduce((sum, c) => sum + c.amount, 0),
+    donationsMade:user.donations.length,
     status:user.status,
-  }));
+    paystackSubAccountId:user.paystackSubAccountId,
+    role:user.role.name
+  }))
 
   const topCampaigns = [...campaignsData]
     .sort((a, b) => b.currentAmount - a.currentAmount)
@@ -155,6 +180,7 @@ async fetchAdminStats() {
     .map(c => ({
       id: c.id,
       title: c.title,
+      description: c.description,
       raisedAmount: c.currentAmount,
       goalAmount: c.targetAmount,
       imageUrl: c.imageUrl,
@@ -164,9 +190,13 @@ async fetchAdminStats() {
       category:c.category,
       deadline:c.deadline,
       status:c.status,
-      isActive:c.isActive
+      isActive:c.isActive,
+      createdAt:c.createdAt,
+      donorCount:c.donations.length
       
-    }));
+    }))
+
+   const categories = categoriesData.map((c)=>({name:c.name,campaigns:c.campaigns.length}))
 
   return {
     totalUsers: usersData.length,
@@ -177,6 +207,7 @@ async fetchAdminStats() {
     flaggedCampaigns: flaggedCampaigns.length,
     recentUsers,
     topCampaigns,
+    categories
   }
 }
 

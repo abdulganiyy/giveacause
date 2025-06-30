@@ -44,7 +44,7 @@ export default function UserDetailsModal({
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: "NGN",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -296,12 +296,12 @@ export default function UserDetailsModal({
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {user.paystackSubaccount ? (
+                {user.paystackSubAccountId ? (
                   <div className="flex items-center">
                     <CheckCircle className="h-4 w-4 mr-3 text-green-500" />
                     <span className="text-sm">Payment account configured</span>
                     <Badge variant="outline" className="ml-2 text-xs">
-                      {user.paystackSubaccount}
+                      {user.paystackSubAccountId}
                     </Badge>
                   </div>
                 ) : (
@@ -313,7 +313,7 @@ export default function UserDetailsModal({
                   </div>
                 )}
                 <p className="text-xs text-gray-500">
-                  {user.paystackSubaccount
+                  {user.paystackSubAccountId
                     ? "User can receive donations from their campaigns"
                     : "User cannot receive donations until payment account is set up"}
                 </p>

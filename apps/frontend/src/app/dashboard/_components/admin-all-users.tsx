@@ -122,7 +122,7 @@ export default function AdminAllUsers() {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency: "NGN",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -162,7 +162,7 @@ export default function AdminAllUsers() {
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           );
         case "name":
-          return a.name.localeCompare(b.name);
+          return a.firstname.localeCompare(b.name);
         case "raised":
           return b.totalRaised - a.totalRaised;
         case "donated":
@@ -200,10 +200,10 @@ export default function AdminAllUsers() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
-              <Link href="/admin" className="flex items-center">
+              <Link href="/dashboard" className="flex items-center">
                 <Shield className="h-8 w-8 text-green-600 mr-2" />
                 <span className="text-xl font-bold text-gray-900">
-                  FundHope Admin
+                  GiveACause Admin
                 </span>
               </Link>
               <span className="text-gray-400">/</span>
@@ -332,7 +332,8 @@ export default function AdminAllUsers() {
                 <SelectContent>
                   <SelectItem value="all">All Roles</SelectItem>
                   <SelectItem value="user">User</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="administrator">Admin</SelectItem>
+                  <SelectItem value="supervisor">Supervisor</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={sortBy} onValueChange={setSortBy}>
@@ -425,12 +426,12 @@ export default function AdminAllUsers() {
                     <TableCell>
                       <Badge
                         variant={
-                          user.role?.name === "Administrator"
+                          user.role === "Administrator"
                             ? "default"
                             : "secondary"
                         }
                       >
-                        {user.role?.name}
+                        {user.role}
                       </Badge>
                     </TableCell>
                     <TableCell>{formatCurrency(user.totalRaised)}</TableCell>
@@ -439,10 +440,10 @@ export default function AdminAllUsers() {
                     <TableCell>
                       <Badge
                         variant={
-                          user.status === "ACCEPTED" ? "default" : "secondary"
+                          user.status === "COMPLETED" ? "default" : "secondary"
                         }
                       >
-                        {user.status === "ACCEPTED" ? "Active" : "Inactive"}
+                        {user.status === "COMPLETED" ? "Active" : "Inactive"}
                       </Badge>
                     </TableCell>
                     <TableCell>{user.createdAt}</TableCell>

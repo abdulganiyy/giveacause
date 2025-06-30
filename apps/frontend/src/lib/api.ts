@@ -89,7 +89,7 @@ export async function fetchDonationsByCampaignId(campaignId: any) {
 }
 
 export async function fetchAllDonations() {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/donations`)
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/donation`)
 
   if (!response.ok) {
     throw new Error("Failed to fetch donations")

@@ -14,8 +14,7 @@ export class CampaignService {
   }
 
   async findAll(query:QueryCampaignDto) {
-    // return this.prisma.campaign.findMany()
-    console.log(query)
+    // console.log(query)
       const {
       search,
       isActive,
@@ -31,7 +30,7 @@ export class CampaignService {
     const where: any = {
     };
 
-    if(isActive == "true"){
+    if(isActive === "true"){
       where.isActive = true
     }
 

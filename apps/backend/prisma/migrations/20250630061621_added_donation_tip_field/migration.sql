@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Donation" ADD COLUMN     "tip" DOUBLE PRECISION DEFAULT 0;

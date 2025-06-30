@@ -201,7 +201,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
@@ -256,7 +256,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card>
+          {/* <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
                 <BarChart3 className="h-8 w-8 text-orange-600" />
@@ -265,7 +265,6 @@ export default function AdminDashboard() {
                     Platform Revenue
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {/* {formatCurrency(adminStats?.platformRevenue || 0)} */}
                     {adminStats?.platformRevenue.toLocaleString("en-NG", {
                       style: "currency",
                       currency: "NGN",
@@ -276,7 +275,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         {/* Alert Cards */}
@@ -442,21 +441,38 @@ export default function AdminDashboard() {
                                   <DropdownMenuSeparator />
 
                                   {campaign.isActive ? (
-                                    <DropdownMenuItem
-                                      onClick={() => {
-                                        updateCampaignMutation.mutate({
-                                          campaignId: campaign.id,
-                                          data: {
-                                            isActive: false,
-                                            status: "PENDING",
-                                          },
-                                        });
-                                      }}
-                                      className="text-orange-600"
-                                    >
-                                      <Pause className="mr-2 h-4 w-4" />
-                                      Deactivate Campaign
-                                    </DropdownMenuItem>
+                                    <>
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          updateCampaignMutation.mutate({
+                                            campaignId: campaign.id,
+                                            data: {
+                                              isActive: false,
+                                              status: "PENDING",
+                                            },
+                                          });
+                                        }}
+                                        className="text-orange-600"
+                                      >
+                                        <Pause className="mr-2 h-4 w-4" />
+                                        Deactivate Campaign
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          updateCampaignMutation.mutate({
+                                            campaignId: campaign.id,
+                                            data: {
+                                              isActive: true,
+                                              featured: true,
+                                            },
+                                          });
+                                        }}
+                                        className="text-green-600"
+                                      >
+                                        <Play className="mr-2 h-4 w-4" />
+                                        Feature Campaign
+                                      </DropdownMenuItem>
+                                    </>
                                   ) : (
                                     <DropdownMenuItem
                                       onClick={() => {
@@ -717,17 +733,24 @@ export default function AdminDashboard() {
                   <div>
                     <div className="flex justify-between mb-2">
                       <span>Platform Tips</span>
-                      <span>{formatCurrency(35000)}</span>
+                      <span>
+                        {adminStats?.platformRevenue.toLocaleString("en-NG", {
+                          style: "currency",
+                          currency: "NGN",
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0,
+                        })}
+                      </span>
                     </div>
                     <Progress value={78} className="h-2" />
                   </div>
-                  <div>
+                  {/* <div>
                     <div className="flex justify-between mb-2">
                       <span>Transaction Fees</span>
                       <span>{formatCurrency(10000)}</span>
                     </div>
                     <Progress value={22} className="h-2" />
-                  </div>
+                  </div> */}
                 </CardContent>
               </Card>
 
@@ -740,22 +763,14 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span>Medical</span>
-                      <span>324 campaigns</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Emergency</span>
-                      <span>189 campaigns</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Education</span>
-                      <span>156 campaigns</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Community</span>
-                      <span>203 campaigns</span>
-                    </div>
+                    {adminStats.categories.map((c: any) => {
+                      return (
+                        <div className="flex justify-between">
+                          <span>{c.name}</span>
+                          <span>{c.campaigns} campaigns</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>

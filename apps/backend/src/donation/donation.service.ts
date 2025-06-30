@@ -37,7 +37,7 @@ export class DonationService {
   }
 
   findAll() {
-    return `This action returns all donation`;
+    return this.prisma.donation.findMany();
   }
 
   findOne(id: number) {

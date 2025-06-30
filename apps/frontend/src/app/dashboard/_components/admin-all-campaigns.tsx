@@ -78,12 +78,27 @@ export default function AdminAllCampaigns() {
   const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("created");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [sortBy, setSortBy] = useState("Most Recent");
+  // const [searchQuery, setSearchQuery] = useState("");
+  // const [selectedCategory, setSelectedCategory] = useState({
+  //   name: "All Categories",
+  //   id: "All Categories",
+  // });
+  // const [sortBy, setSortBy] = useState("Most Recent");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { data: campaignsData, isLoading } = useQuery({
     queryKey: ["allCampaigns"],
-    queryFn: () => fetchCampaigns(),
+    queryFn: () =>
+      fetchCampaigns(
+        debouncedSearchQuery,
+        categoryFilter,
+        currentPage,
+        sortBy,
+        false
+      ),
   });
 
   // Mutations
@@ -148,20 +163,20 @@ export default function AdminAllCampaigns() {
 
   const campaigns = campaignsData?.data || [];
 
-  //   console.log(campaigns);
+  console.log(campaigns);
 
   // Filter and sort campaigns
   const filteredCampaigns = campaigns
     ?.filter((campaign: any) => {
       const matchesSearch =
         campaign.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        campaign.organizer.name
+        campaign.creator.firstname
           .toLowerCase()
           .includes(searchQuery.toLowerCase());
       const matchesStatus =
         statusFilter === "all" || campaign.status === statusFilter;
       const matchesCategory =
-        categoryFilter === "all" || campaign.category === categoryFilter;
+        categoryFilter === "" || campaign.category === categoryFilter;
       return matchesSearch && matchesStatus && matchesCategory;
     })
     .sort((a: any, b: any) => {
@@ -208,10 +223,10 @@ export default function AdminAllCampaigns() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
-              <Link href="/admin" className="flex items-center">
+              <Link href="/dashboard" className="flex items-center">
                 <Shield className="h-8 w-8 text-green-600 mr-2" />
                 <span className="text-xl font-bold text-gray-900">
-                  FundHope Admin
+                  GiveACause Admin
                 </span>
               </Link>
               <span className="text-gray-400">/</span>
@@ -343,7 +358,7 @@ export default function AdminAllCampaigns() {
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
                   {categories.map((category: any) => (
-                    <SelectItem key={category?.name} value={category.name}>
+                    <SelectItem key={category} value={category.name}>
                       {category.name}
                     </SelectItem>
                   ))}

@@ -53,14 +53,16 @@ export default function UserAllCampaigns() {
     queryFn: () => fetchUserCampaigns(),
   });
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+  // const formatCurrency = (amount: number) => {
+  //   return new Intl.NumberFormat("en-US", {
+  //     style: "currency",
+  //     currency: "USD",
+  //     minimumFractionDigits: 0,
+  //     maximumFractionDigits: 0,
+  //   }).format(amount);
+  // };
+
+  // console.log(campaigns);
 
   // Filter and sort campaigns
   const filteredCampaigns = campaigns
@@ -90,19 +92,19 @@ export default function UserAllCampaigns() {
     });
 
   const totalRaised = campaigns.reduce(
-    (sum: number, c: any) => sum + c.raisedAmount,
+    (sum: number, c: any) => sum + c.currentAmount,
     0
   );
   const totalGoal = campaigns.reduce(
-    (sum: number, c: any) => sum + c.goalAmount,
+    (sum: number, c: any) => sum + c.targetAmount,
     0
   );
   const totalDonors = campaigns.reduce(
-    (sum: number, c: any) => sum + c.donorCount,
+    (sum: number, c: any) => sum + c.donations?.length,
     0
   );
   const activeCampaigns = campaigns.filter(
-    (c: any) => c.status === "active"
+    (c: any) => c.status === "ACCEPTED"
   ).length;
 
   if (isLoading) {
@@ -126,7 +128,7 @@ export default function UserAllCampaigns() {
               <Link href="/dashboard" className="flex items-center">
                 <Heart className="h-8 w-8 text-green-600 mr-2" />
                 <span className="text-xl font-bold text-gray-900">
-                  FundHope
+                  GiveACause
                 </span>
               </Link>
               <span className="text-gray-400">/</span>
@@ -175,7 +177,12 @@ export default function UserAllCampaigns() {
                     Total Raised
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {formatCurrency(totalRaised)}
+                    {totalRaised.toLocaleString("en-NG", {
+                      style: "currency",
+                      currency: "NGN",
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    })}
                   </p>
                 </div>
               </div>
@@ -207,7 +214,7 @@ export default function UserAllCampaigns() {
                     Total Donors
                   </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {/* {(totalDonors as string) ?? 0} */}
+                    {(totalDonors as string) ?? 0}
                   </p>
                 </div>
               </div>
@@ -322,10 +329,21 @@ export default function UserAllCampaigns() {
                     <div>
                       <div className="flex justify-between text-sm mb-1">
                         <span className="font-medium">
-                          {formatCurrency(campaign.currentAmount)}
+                          {campaign.currentAmount.toLocaleString("en-NG", {
+                            style: "currency",
+                            currency: "NGN",
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0,
+                          })}
                         </span>
                         <span className="text-gray-500">
-                          of {formatCurrency(campaign.targetAmount)}
+                          of{" "}
+                          {campaign.targetAmount.toLocaleString("en-NG", {
+                            style: "currency",
+                            currency: "NGN",
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0,
+                          })}
                         </span>
                       </div>
                       <Progress
@@ -359,10 +377,10 @@ export default function UserAllCampaigns() {
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
                       </Button>
-                      <Button variant="outline" size="sm" className="flex-1">
+                      {/* <Button variant="outline" size="sm" className="flex-1">
                         <Share2 className="mr-2 h-4 w-4" />
                         Share
-                      </Button>
+                      </Button> */}
                     </div>
                   </div>
                 </CardContent>
