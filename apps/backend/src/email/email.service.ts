@@ -23,9 +23,10 @@ export class EmailService {
         'compile',
         hbs({
           viewEngine: {
-            partialsDir:  'templates'
+            partialsDir:  'templates',
+            defaultLayout: false,
           },
-          viewPath: join(__dirname, '..', '/email/templates'),
+          viewPath: 'src/email/templates',
           extName: '.hbs'
         }),
       );
