@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryClientProviders } from "./query-client";
+import { Suspense } from "react";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -27,8 +28,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${geistMono.variable} antialiased`}>
-        <QueryClientProviders>{children}</QueryClientProviders>
-        <Toaster />
+        <QueryClientProviders>
+          <Suspense>
+            {children}
+            <Toaster />
+          </Suspense>
+        </QueryClientProviders>
       </body>
     </html>
   );
