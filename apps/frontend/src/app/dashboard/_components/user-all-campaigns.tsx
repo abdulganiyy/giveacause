@@ -35,6 +35,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { fetchUserCampaigns, fetchUserById } from "@/lib/api";
 import { useUser } from "@/hooks/useUser";
 import { getDaysBetweenDates } from "@/lib/utils";
+import EditCampaignModal from "./edit-campaign-modal";
 
 export default function UserAllCampaigns() {
   //   const userId = 1 // In a real app, this would come from auth context
@@ -373,10 +374,11 @@ export default function UserAllCampaigns() {
                           View
                         </Link>
                       </Button>
-                      <Button variant="outline" size="sm" className="flex-1">
+                      <EditCampaignModal campaign={campaign} />
+                      {/* <Button variant="outline" size="sm" className="flex-1">
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
-                      </Button>
+                      </Button> */}
                       {/* <Button variant="outline" size="sm" className="flex-1">
                         <Share2 className="mr-2 h-4 w-4" />
                         Share

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Welcome to {{appName}}</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        padding: 20px;
+      }
+      .container {
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        max-width: 600px;
+        margin: auto;
+      }
+      .button {
+        display: inline-block;
+        padding: 12px 24px;
+        margin-top: 20px;
+        background-color: #28a745;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 5px;
+      }
+      .footer {
+        margin-top: 30px;
+        font-size: 12px;
+        color: #999999;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Welcome to {{appName}}, {{name}}!</h2>
+      <p>We're excited to have you join our community of impact makers.</p>
+      {{!-- <p>Before you can start creating or supporting campaigns, please confirm your email address by clicking the button below:</p> --}}
+      {{!-- <a href="{{confirmationLink}}" class="button">Confirm Email</a> --}}
+      <p>If you didn’t sign up for {{appName}}, you can safely ignore this email.</p>
+      <div class="footer">
+        <p>— The {{appName}} Team</p>
+        <p>Building something meaningful together.</p>
+      </div>
+    </div>
+  </body>
+</html>

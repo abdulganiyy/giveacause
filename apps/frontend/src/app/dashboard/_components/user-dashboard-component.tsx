@@ -43,6 +43,7 @@ import { useState } from "react";
 import { getDaysBetweenDates } from "@/lib/utils";
 import CreateCampaignModal from "./create-campaign-modal";
 import { useRouter } from "next/navigation";
+import EditCampaignModal from "./edit-campaign-modal";
 
 export default function UserDashboard() {
   // const userId = 1; // In a real app, this would come from auth context
@@ -364,14 +365,15 @@ export default function UserDashboard() {
                               View
                             </Link>
                           </Button>
-                          <Button
+                          <EditCampaignModal campaign={campaign} />
+                          {/* <Button
                             variant="outline"
                             size="sm"
                             className="flex-1"
                           >
                             <Edit className="mr-2 h-4 w-4" />
                             Edit
-                          </Button>
+                          </Button> */}
                           {/* <Button
                             variant="outline"
                             size="sm"

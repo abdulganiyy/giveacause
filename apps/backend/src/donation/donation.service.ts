@@ -3,10 +3,11 @@ import { CreateDonationDto } from './dto/create-donation.dto';
 import { UpdateDonationDto } from './dto/update-donation.dto';
 import { PrismaService } from 'src/prisma.service';
 import { CampaignService } from 'src/campaign/campaign.service';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class DonationService {
-      constructor(private prisma: PrismaService,private campaignService:CampaignService) {}
+      constructor(private prisma: PrismaService,private campaignService:CampaignService, private emailService:EmailService) {}
   
  create(createDonationDto: CreateDonationDto) {
     // return this.prisma.donation.create({data:createDonationDto})
@@ -32,8 +33,18 @@ export class DonationService {
       // Step 3: Create the donation
       const donation = await tx.donation.create({ data:createDonationDto });
 
-      return donation;
+  await this.emailService.sendEmail(createDonationDto.email as string,
+    'Thank You for Your Donation',
+    'donation-confirmation',
+    {
+    amount:createDonationDto.amount,  
+    appName:process.env.APPNAME,
+    campaignTitle:campaign.title,
+    campaignLink:`${process.env.FRONTEND_URL}/campaigns` 
     });
+
+      return donation;
+    })
   }
 
   findAll() {

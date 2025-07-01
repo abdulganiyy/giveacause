@@ -5,6 +5,9 @@ export class CreateDonationDto {
   @IsNumber()
   amount: number;
 
+  @IsNumber()
+  tip: number;
+
   @IsOptional()
   @IsString()
   message?: string;

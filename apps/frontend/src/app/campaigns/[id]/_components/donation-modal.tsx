@@ -120,8 +120,7 @@ export default function DonationModal({
     reference: new Date().getTime().toString(),
     email: donorEmail,
     amount: totalAmount * 100, // Paystack amount is in kobo (100 kobo = 1 Naira)
-    publicKey:
-      process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_yourtestkeyhere",
+    publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
     subaccount: paystackSubAccountId,
     transaction_charge: platformTip * 100,
     bearer: "subaccount",
@@ -156,6 +155,7 @@ export default function DonationModal({
           name: anonymous ? "Anonymous" : donorName,
           email: donorEmail,
           amount: finalDonationAmount,
+          tip: platformTip ?? 0,
           message,
           anonymous,
         });

@@ -126,7 +126,8 @@ export async function submitDonation(data: {
   name: string
   email: string
   amount: number
-  message?: string
+  message?: string,
+  tip: number
   anonymous?: boolean
 }) {
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/donation`, {

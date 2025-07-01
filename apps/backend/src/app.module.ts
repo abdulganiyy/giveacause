@@ -9,10 +9,11 @@ import { CampaignModule } from './campaign/campaign.module';
 import { CategoryModule } from './category/category.module';
 import { DonationModule } from './donation/donation.module';
 import { PaystackModule } from './paystack/paystack.module';
+import { EmailModule } from './email/email.module';
 
 
 @Module({
-  imports: [UserModule, AuthModule, RoleModule, CampaignModule, CategoryModule, DonationModule, PaystackModule],
+  imports: [UserModule, AuthModule, RoleModule, CampaignModule, CategoryModule, DonationModule, PaystackModule,EmailModule],
   controllers: [AppController],
   providers: [AppService, EmailService]
 })

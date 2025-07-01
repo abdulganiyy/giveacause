@@ -52,19 +52,19 @@ async signUp(email: string,firstname: string,lastname: string, pass: string): Pr
    const newUser = await this.usersService.create({email,password:passwordHash,lastname,firstname,roleId:userRole.id})
 
  
-    const payload = { userId: newUser.userId,email:newUser.email, username: newUser.username, firstname: newUser.firstname,role:userRole.name,status:user.status};
+    const payload = { userId: newUser.userId,email:newUser.email, username: newUser.username, firstname: newUser.firstname,role:userRole.name,status:newUser.status};
 
-    // await this.emailService.sendEmail(newUser.email,
-    //   'Welcome to Our App!',
-    //   'signup',
-    //   {
-    //     name: newUser.name,
-    //     link: `${process.env.FRONTEND_URL}/dashboard`,
-    //   })
+    await this.emailService.sendEmail(newUser.email,
+      'Welcome to Our App!',
+      'signup',
+      {
+        name: newUser.firstname,
+        appName:process.env.APPNAME
+      })
 
     return {
       access_token: await this.jwtService.signAsync(payload),
-    };
+    }
 }
 
 async forgotPassword(email: string): Promise<any> {
@@ -80,13 +80,14 @@ async forgotPassword(email: string): Promise<any> {
   })
 
 
-  //  await this.emailService.sendEmail(email,
-  //   'Reset Your Password',
-  //   'reset-password',
-  //   {name:user.firstname,
-  //   resetLink: `${process.env.FRONTEND_URL}/reset-password?token=${token}`,
-  //   appName:'Odoctour'
-  //   });
+   await this.emailService.sendEmail(email,
+    'Reset Your Password',
+    'reset-password',
+    {name:user.firstname,
+    resetLink: `${process.env.FRONTEND_URL}/reset-password?token=${token}`,
+    appName:process.env.APPNAME
+
+    });
 
     return { message: 'Check your email for password reset link' }
 
@@ -118,32 +119,3 @@ newPassword: string,
 }
 
 }
-
-
-
-// import { Injectable } from '@nestjs/common';
-// import { CreateAuthDto } from './dto/create-auth.dto';
-// import { UpdateAuthDto } from './dto/update-auth.dto';
-
-// @Injectable()
-// export class AuthService {
-//   create(createAuthDto: CreateAuthDto) {
-//     return 'This action adds a new auth';
-//   }
-
-//   findAll() {
-//     return `This action returns all auth`;
-//   }
-
-//   findOne(id: number) {
-//     return `This action returns a #${id} auth`;
-//   }
-
-//   update(id: number, updateAuthDto: UpdateAuthDto) {
-//     return `This action updates a #${id} auth`;
-//   }
-
-//   remove(id: number) {
-//     return `This action removes a #${id} auth`;
-//   }
-// }
