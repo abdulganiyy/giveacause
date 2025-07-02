@@ -1,4 +1,4 @@
-import { Injectable ,NotFoundException} from '@nestjs/common';
+import { Injectable ,NotFoundException,Logger, HttpException, HttpStatus} from '@nestjs/common';
 import { CreateDonationDto } from './dto/create-donation.dto';
 import { UpdateDonationDto } from './dto/update-donation.dto';
 import { PrismaService } from 'src/prisma.service';
@@ -7,12 +7,17 @@ import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class DonationService {
+    private readonly logger = new Logger(DonationService.name);
+
+  
       constructor(private prisma: PrismaService,private campaignService:CampaignService, private emailService:EmailService) {}
   
  create(createDonationDto: CreateDonationDto) {
     // return this.prisma.donation.create({data:createDonationDto})
         return this.prisma.$transaction(async (tx) => {
-      const campaign = await tx.campaign.findUnique({
+
+            try {
+                 const campaign = await tx.campaign.findUnique({
         where: { id: createDonationDto.campaignId },
       });
 
@@ -37,13 +42,23 @@ export class DonationService {
     'Thank You for Your Donation',
     'donation-confirmation',
     {
-    amount:createDonationDto.amount,  
+    amount:createDonationDto.amount.toLocaleString("en-NG", {
+                      style: "currency",
+                      currency: "NGN",
+                    }),  
     appName:process.env.APPNAME,
     campaignTitle:campaign.title,
     campaignLink:`${process.env.FRONTEND_URL}/campaigns` 
     });
+            this.logger.log(`Donation sent successfully`);
 
       return donation;
+    } catch (error) {
+      this.logger.error(`Error sending donation: ${error.message}`);
+
+      throw new HttpException(`Error sending donation: ${error.message}`,HttpStatus.BAD_REQUEST)
+    }
+   
     })
   }
 

@@ -99,9 +99,10 @@ export default function DonationModal({
   // console.log(paystackSubAccountId);
 
   // Mutation for submitting donation
-  const { mutate, isPending } = useMutation({
+  const { mutateAsync, isPending } = useMutation({
     mutationFn: submitDonation,
     onSuccess: () => {
+      // console.log("Donation details sent to backend");
       // Invalidate and refetch donations query
       queryClient.invalidateQueries({ queryKey: ["donations", campaignId] });
       queryClient.invalidateQueries({ queryKey: ["campaign", campaignId] });
@@ -110,6 +111,7 @@ export default function DonationModal({
     },
     onError: (error) => {
       setError("Failed to process donation. Please try again.");
+      // toast.error("Failed to process donation. Please try again.");
       console.error("Donation error:", error);
       onOpen();
     },
@@ -148,10 +150,11 @@ export default function DonationModal({
     onClose();
 
     initializePayment({
-      onSuccess: () => {
-        mutate({
+      onSuccess: async () => {
+        // console.log("Payment sent to paystack");
+        await mutateAsync({
           campaignId,
-          userId: user.userId,
+          userId: user?.userId,
           name: anonymous ? "Anonymous" : donorName,
           email: donorEmail,
           amount: finalDonationAmount,
