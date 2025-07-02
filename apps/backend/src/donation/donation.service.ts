@@ -43,14 +43,14 @@ export class DonationService {
     'donation-confirmation',
     {
     amount:createDonationDto.amount.toLocaleString("en-NG", {
-                      style: "currency",
-                      currency: "NGN",
-                    }),  
+      style: "currency",
+      currency: "NGN",
+    }),  
     appName:process.env.APPNAME,
     campaignTitle:campaign.title,
     campaignLink:`${process.env.FRONTEND_URL}/campaigns` 
     });
-            this.logger.log(`Donation sent successfully`);
+    this.logger.log(`Donation sent successfully`)
 
       return donation;
     } catch (error) {

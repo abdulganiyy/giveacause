@@ -1,5 +1,5 @@
 import * as yup from "yup";
-import { REQUIRED } from "./common-validation";
+import { REQUIRED, INVALID_EMAIL } from "./common-validation";
 import { validIDInfoFormFields } from "@/app/dashboard/settings/_components/ValidIDInfo";
 
 export const basicInfoFormSchema = yup.object().shape({
@@ -39,4 +39,20 @@ export const validIDInfoFormSchema = yup.object().shape({
       mimeType: yup.string().required(REQUIRED),
     })
   ),
+});
+
+export const createUserFormSchema = yup.object().shape({
+  email: yup.string().email().required(INVALID_EMAIL),
+  firstname: yup.string().required(),
+  lastname: yup.string().required(),
+  roleId: yup.string().required(),
+  password: yup.string().required("Password is required"),
+});
+
+export const editUserFormSchema = yup.object().shape({
+  email: yup.string().email().required(INVALID_EMAIL),
+  firstname: yup.string().required(),
+  lastname: yup.string().required(),
+  roleId: yup.string().required(),
+  password: yup.string().optional(),
 });

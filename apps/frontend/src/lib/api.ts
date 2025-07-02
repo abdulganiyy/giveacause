@@ -218,3 +218,13 @@ export async function deleteUser(id:string) {
   return response;
 
 }
+
+export async function fetchRoles() {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/role`)
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch roles")
+  }
+
+  return response.json()
+}

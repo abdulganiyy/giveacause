@@ -66,6 +66,8 @@ import { toast } from "sonner";
 import UserDetailsModal from "./user-details-modal";
 
 import { fetchAllUsers, updateUser, deleteUser } from "@/lib/api";
+import CreateUserModal from "./create-user-modal";
+import EditUserModal from "./edit-user-modal";
 // import type { User } from "@/lib/api"
 
 export default function AdminAllUsers() {
@@ -300,8 +302,10 @@ export default function AdminAllUsers() {
           </Card>
         </div>
 
+        <CreateUserModal />
+
         {/* Filters and Search */}
-        <Card className="mb-6">
+        <Card className="mt-6 mb-6">
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
@@ -490,6 +494,8 @@ export default function AdminAllUsers() {
                             )}
 
                             <DropdownMenuSeparator />
+
+                            <EditUserModal user={user} />
 
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
