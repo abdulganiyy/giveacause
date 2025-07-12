@@ -68,4 +68,13 @@ export class PaystackService {
       throw new HttpException(message, HttpStatus.BAD_REQUEST);
     }
   }
+
+   async verifyDonation(data:any) {
+    try {
+  
+    } catch (error) {
+      return null
+        
+    }
+  }
 }

@@ -13,4 +13,13 @@ export class PaystackController {
   ) {
     return this.paystackService.verifyBankAccount(accountNumber,bankCode)
   }
+
+  @Post('web-hook')
+  async verifyTransaction(
+    @Body() data:any
+  ) {
+
+    console.log(data)
+    return {}
+  }
 }

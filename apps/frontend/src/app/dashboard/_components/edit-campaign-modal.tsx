@@ -79,8 +79,9 @@ export default function EditCampaignModal({ campaign }: any) {
   ];
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async (payload: any) => {
-      const response = await apiService.patch(`/campaign`, payload);
+    mutationFn: async (data: any) => {
+      const { id, ...payload } = data;
+      const response = await apiService.patch(`/campaign/${id}`, payload);
 
       return response.data;
     },
@@ -94,8 +95,14 @@ export default function EditCampaignModal({ campaign }: any) {
   });
 
   async function handleCreateCampaign(data: FormValues | any): Promise<void> {
+    console.log(data);
     setError(null);
-    mutate({ ...data, imageUrl: data.imageUrl[0].url, currency: "₦" });
+    mutate({
+      ...data,
+      id: campaign.id,
+      imageUrl: data.imageUrl[0].url,
+      currency: "₦",
+    });
   }
 
   return (
@@ -120,7 +127,21 @@ export default function EditCampaignModal({ campaign }: any) {
           formWrapperClassName="w-full flex flex-col"
           formFieldElClass="w-full"
           onSubmit={handleCreateCampaign}
-          defaultValues={{ ...campaign, imageUrl: [] }}
+          defaultValues={{
+            // ...campaign,
+            title: campaign.title,
+            description: campaign.description,
+            categoryId: campaign.categoryId,
+            targetAmount: campaign.targetAmount,
+            deadline: campaign.deadline,
+            imageUrl: [
+              {
+                url: campaign.imageUrl,
+                filename: campaign.imageUrl,
+                mimeType: "jpg",
+              },
+            ],
+          }}
           actionButtonsComponent={
             <div className="flex flex-col gap-4">
               <Button
